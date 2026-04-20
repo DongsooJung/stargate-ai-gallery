@@ -253,39 +253,6 @@
   "orig": "H:\\내 드라이브\\스타게이트(6GB)\\01_회사운영\\STARGATE HOMEPAGE.html"
  },
  {
-  "id": "cafe24-005",
-  "html": "cafe24-005.html",
-  "thumb": "thumbs/cafe24-005.png",
-  "name": "cafe24_product_detail_KOI영재고.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "스타게이트(6GB)",
-  "mt": "2026-04-01",
-  "sz": "20.1",
-  "orig": "H:\\내 드라이브\\스타게이트(6GB)\\01_회사운영\\홈페이지\\Homepage Cowork Work\\cafe24_product_detail_KOI영재고.html"
- },
- {
-  "id": "cafe24-006",
-  "html": "cafe24-006.html",
-  "thumb": "thumbs/cafe24-006.png",
-  "name": "cafe24_product_detail_고등수학.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "스타게이트(6GB)",
-  "mt": "2026-04-01",
-  "sz": "30.7",
-  "orig": "H:\\내 드라이브\\스타게이트(6GB)\\01_회사운영\\홈페이지\\Homepage Cowork Work\\cafe24_product_detail_고등수학.html"
- },
- {
-  "id": "cafe24-007",
-  "html": "cafe24-007.html",
-  "thumb": "thumbs/cafe24-007.png",
-  "name": "cafe24_product_detail_학부모가이드.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "스타게이트(6GB)",
-  "mt": "2026-04-01",
-  "sz": "17.0",
-  "orig": "H:\\내 드라이브\\스타게이트(6GB)\\01_회사운영\\홈페이지\\Homepage Cowork Work\\cafe24_product_detail_학부모가이드.html"
- },
- {
   "id": "pd-002",
   "html": "pd-002.html",
   "thumb": "thumbs/pd-002.png",
@@ -328,38 +295,5 @@
   "mt": "2026-03-06",
   "sz": "19.9",
   "orig": "H:\\내 드라이브\\개인 자료(30GB)\\홈페이지\\stargate-web\\index.html"
- },
- {
-  "id": "cafe24-008",
-  "html": "cafe24-008.html",
-  "thumb": "thumbs/cafe24-008.png",
-  "name": "cafe24_product_detail_KOI영재고.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "개인 자료(30GB)",
-  "mt": "2026-04-01",
-  "sz": "20.1",
-  "orig": "H:\\내 드라이브\\개인 자료(30GB)\\홈페이지\\CAFE 24 PRODUCT DETAIL\\cafe24_product_detail_KOI영재고.html"
- },
- {
-  "id": "cafe24-009",
-  "html": "cafe24-009.html",
-  "thumb": "thumbs/cafe24-009.png",
-  "name": "cafe24_product_detail_고등수학.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "개인 자료(30GB)",
-  "mt": "2026-04-01",
-  "sz": "30.7",
-  "orig": "H:\\내 드라이브\\개인 자료(30GB)\\홈페이지\\CAFE 24 PRODUCT DETAIL\\cafe24_product_detail_고등수학.html"
- },
- {
-  "id": "cafe24-010",
-  "html": "cafe24-010.html",
-  "thumb": "thumbs/cafe24-010.png",
-  "name": "cafe24_product_detail_학부모가이드.html",
-  "cat": "AI-Cafe24상품상세",
-  "tag": "개인 자료(30GB)",
-  "mt": "2026-04-01",
-  "sz": "17.0",
-  "orig": "H:\\내 드라이브\\개인 자료(30GB)\\홈페이지\\CAFE 24 PRODUCT DETAIL\\cafe24_product_detail_학부모가이드.html"
  }
 ]
