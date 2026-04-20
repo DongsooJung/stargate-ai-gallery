@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 도구 생태계 - 인터랙티브 학습</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f8f9fc;
+  --bg-card: #ffffff;
+  --bg-hero: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 30%, #2d1b69 60%, #1a0a3e 100%);
+  --text: #1a1a2e;
+  --text-secondary: #555;
+  --text-muted: #888;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --accent-glow: rgba(108, 92, 231, 0.3);
+  --border: #e8e8f0;
+  --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  --shadow-hover: 0 12px 40px rgba(108, 92, 231, 0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  /* concept colors */
+  --c-tools: #6c5ce7;
+  --c-settings: #00b894;
+  --c-claude-md: #fdcb6e;
+  --c-skills: #e17055;
+  --c-agents: #0984e3;
+  --c-hooks: #d63031;
+  --c-mcp: #00cec9;
+  --c-plugins: #e84393;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  position: fixed; top: 0; left: 0; z-index: 1000;
+  height: 3px; background: var(--accent);
+  transition: width 0.1s ease;
+}
+
+/* ===== Navigation ===== */
+.nav {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 999;
+  display: flex; gap: 4px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border-radius: 50px;
+  border: 1px solid rgba(232, 232, 240, 0.6);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.nav.visible { opacity: 1; pointer-events: auto; }
+.nav a {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 30px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.nav a:hover { background: rgba(108, 92, 231, 0.08); color: var(--accent); }
+.nav a.active { background: var(--accent); color: #fff; }
+.nav a .nav-icon { font-size: 14px; }
+
+@media (max-width: 900px) {
+  .nav { gap: 2px; padding: 4px 6px; }
+  .nav a { padding: 5px 10px; font-size: 12px; }
+  .nav a span:not(.nav-icon) { display: none; }
+}
+
+/* ===== Hero ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--bg-hero);
+  overflow: hidden;
+  padding: 40px 20px;
+}
+.hero-canvas {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
+.hero-content {
+  position: relative; z-index: 2;
+  text-align: center;
+  max-width: 800px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 16px;
+  border-radius: 30px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  font-size: 13px; font-weight: 500;
+  margin-bottom: 24px;
+}
+.hero-badge .pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #00b894;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero h1 .gradient-text {
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7, #fd79a8, #e17055);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: rgba(255,255,255,0.6);
+  max-width: 560px; margin: 0 auto 40px;
+  line-height: 1.7;
+}
+.hero-scroll-hint {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.hero-scroll-hint .arrow {
+  width: 24px; height: 24px;
+  border-right: 2px solid rgba(255,255,255,0.3);
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  transform: rotate(45deg);
+  animation: scrollBounce 2s infinite;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: rotate(45deg) translateY(0); }
+  50% { transform: rotate(45deg) translateY(6px); }
+}
+
+/* ===== Floating Orbs in Hero ===== */
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(60px);
+  animation: orbFloat 20s infinite ease-in-out;
+}
+.orb-1 { width: 400px; height: 400px; background: rgba(108,92,231,0.2); top: 10%; left: -10%; animation-delay: 0s; }
+.orb-2 { width: 300px; height: 300px; background: rgba(0,206,201,0.15); bottom: 10%; right: -5%; animation-delay: -7s; }
+.orb-3 { width: 250px; height: 250px; background: rgba(225,112,85,0.12); top: 50%; left: 60%; animation-delay: -14s; }
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+/* ===== Section Shared ===== */
+section {
+  padding: 100px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+.section-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+.section-header h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+.section-header p {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 600px; margin: 0 auto;
+}
+
+/* ===== Architecture Layers ===== */
+#architecture { padding-bottom: 60px; }
+.arch-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+.arch-layer {
+  position: relative;
+  width: 100%;
+  padding: 18px 28px;
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  z-index: 1;
+}
+.arch-layer:hover {
+  transform: translateY(-4px) scale(1.02);
+  z-index: 2;
+}
+.arch-layer .layer-num {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.arch-layer h3 {
+  font-size: 1.15rem; font-weight: 700;
+  margin-bottom: 4px;
+}
+.arch-layer p {
+  font-size: 0.85rem; line-height: 1.5;
+}
+.arch-connector {
+  width: 2px; height: 20px;
+  background: var(--border);
+  position: relative;
+  z-index: 0;
+}
+.arch-connector::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 8px;
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* Layer Colors */
+.layer-plugins { background: rgba(232,67,147,0.06); border-color: rgba(232,67,147,0.2); }
+.layer-plugins:hover { box-shadow: 0 8px 30px rgba(232,67,147,0.15); border-color: var(--c-plugins); }
+.layer-plugins .layer-num { color: var(--c-plugins); }
+.layer-plugins h3 { color: var(--c-plugins); }
+
+.layer-mcp { background: rgba(0,206,201,0.06); border-color: rgba(0,206,201,0.2); }
+.layer-mcp:hover { box-shadow: 0 8px 30px rgba(0,206,201,0.15); border-color: var(--c-mcp); }
+.layer-mcp .layer-num { color: var(--c-mcp); }
+.layer-mcp h3 { color: var(--c-mcp); }
+
+.layer-hooks { background: rgba(214,48,49,0.06); border-color: rgba(214,48,49,0.2); }
+.layer-hooks:hover { box-shadow: 0 8px 30px rgba(214,48,49,0.15); border-color: var(--c-hooks); }
+.layer-hooks .layer-num { color: var(--c-hooks); }
+.layer-hooks h3 { color: var(--c-hooks); }
+
+.layer-agents { background: rgba(9,132,227,0.06); border-color: rgba(9,132,227,0.2); }
+.layer-agents:hover { box-shadow: 0 8px 30px rgba(9,132,227,0.15); border-color: var(--c-agents); }
+.layer-agents .layer-num { color: var(--c-agents); }
+.layer-agents h3 { color: var(--c-agents); }
+
+.layer-skills { background: rgba(225,112,85,0.06); border-color: rgba(225,112,85,0.2); }
+.layer-skills:hover { box-shadow: 0 8px 30px rgba(225,112,85,0.15); border-color: var(--c-skills); }
+.layer-skills .layer-num { color: var(--c-skills); }
+.layer-skills h3 { color: var(--c-skills); }
+
+.layer-claude-md { background: rgba(253,203,110,0.06); border-color: rgba(253,203,110,0.3); }
+.layer-claude-md:hover { box-shadow: 0 8px 30px rgba(253,203,110,0.15); border-color: var(--c-claude-md); }
+.layer-claude-md .layer-num { color: #d4a017; }
+.layer-claude-md h3 { color: #d4a017; }
+
+.layer-settings { background: rgba(0,184,148,0.06); border-color: rgba(0,184,148,0.2); }
+.layer-settings:hover { box-shadow: 0 8px 30px rgba(0,184,148,0.15); border-color: var(--c-settings); }
+.layer-settings .layer-num { color: var(--c-settings); }
+.layer-settings h3 { color: var(--c-settings); }
+
+.layer-tools { background: rgba(108,92,231,0.06); border-color: rgba(108,92,231,0.2); }
+.layer-tools:hover { box-shadow: 0 8px 30px rgba(108,92,231,0.15); border-color: var(--c-tools); }
+.layer-tools .layer-num { color: var(--c-tools); }
+.layer-tools h3 { color: var(--c-tools); }
+
+/* ===== Concept Cards ===== */
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+.concept-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.concept-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+.concept-card:hover .card-header { transform: scale(1.02); }
+.card-header {
+  padding: 24px 28px 20px;
+  transition: transform 0.35s ease;
+}
+.card-header .card-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+.card-header h3 {
+  font-size: 1.25rem; font-weight: 700;
+  margin-bottom: 4px;
+}
+.card-header .card-subtitle {
+  font-size: 0.85rem; color: var(--text-muted);
+  font-weight: 500;
+}
+.card-body {
+  padding: 0 28px 24px;
+}
+.card-body p { font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 16px; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.card-tag {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+/* expanded detail */
+.card-detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 28px;
+}
+.concept-card.expanded .card-detail {
+  max-height: 1200px;
+  padding: 0 28px 24px;
+}
+.card-detail h4 {
+  font-size: 0.9rem; font-weight: 700;
+  margin-bottom: 10px; margin-top: 8px;
+}
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+}
+.detail-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.detail-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.detail-table tr:last-child td { border-bottom: none; }
+.card-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 10px 28px;
+  font-size: 0.82rem; font-weight: 600;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  transition: color 0.2s ease;
+}
+.card-toggle:hover { color: var(--accent); }
+.card-toggle .toggle-arrow {
+  transition: transform 0.3s ease;
+  font-size: 10px;
+}
+.concept-card.expanded .card-toggle .toggle-arrow { transform: rotate(180deg); }
+
+/* Card color variants */
+.card-tools .card-icon { background: rgba(108,92,231,0.1); color: var(--c-tools); }
+.card-tools .card-tag { background: rgba(108,92,231,0.08); color: var(--c-tools); }
+.card-settings .card-icon { background: rgba(0,184,148,0.1); color: var(--c-settings); }
+.card-settings .card-tag { background: rgba(0,184,148,0.08); color: var(--c-settings); }
+.card-claude-md .card-icon { background: rgba(253,203,110,0.2); color: #d4a017; }
+.card-claude-md .card-tag { background: rgba(253,203,110,0.15); color: #b88d0f; }
+.card-skills .card-icon { background: rgba(225,112,85,0.1); color: var(--c-skills); }
+.card-skills .card-tag { background: rgba(225,112,85,0.08); color: var(--c-skills); }
+.card-agents .card-icon { background: rgba(9,132,227,0.1); color: var(--c-agents); }
+.card-agents .card-tag { background: rgba(9,132,227,0.08); color: var(--c-agents); }
+.card-hooks .card-icon { background: rgba(214,48,49,0.1); color: var(--c-hooks); }
+.card-hooks .card-tag { background: rgba(214,48,49,0.08); color: var(--c-hooks); }
+.card-mcp .card-icon { background: rgba(0,206,201,0.1); color: var(--c-mcp); }
+.card-mcp .card-tag { background: rgba(0,206,201,0.08); color: var(--c-mcp); }
+.card-plugins .card-icon { background: rgba(232,67,147,0.1); color: var(--c-plugins); }
+.card-plugins .card-tag { background: rgba(232,67,147,0.08); color: var(--c-plugins); }
+
+/* ===== Data Flow ===== */
+#dataflow { padding-top: 60px; }
+.flow-container {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0;
+  max-width: 600px; margin: 0 auto;
+}
+.flow-step {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+.flow-step:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow);
+}
+.flow-step .flow-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.flow-step .flow-text h4 { font-size: 0.95rem; font-weight: 600; }
+.flow-step .flow-text p { font-size: 0.8rem; color: var(--text-muted); }
+.flow-arrow {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 0;
+  color: var(--text-muted);
+}
+.flow-arrow svg { width: 20px; height: 20px; }
+.flow-hook-badge {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 8px; border-radius: 10px;
+  background: rgba(214,48,49,0.08); color: var(--c-hooks);
+  margin-left: 6px;
+}
+
+/* ===== Comparison ===== */
+#comparison { padding-top: 60px; }
+.comparison-tabs {
+  display: flex; justify-content: center; gap: 8px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.comp-tab {
+  padding: 8px 20px; border-radius: 30px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer; transition: all 0.25s ease;
+}
+.comp-tab:hover { border-color: var(--accent); color: var(--accent); }
+.comp-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.comp-panel { display: none; }
+.comp-panel.active { display: block; }
+.comp-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  font-size: 0.88rem;
+}
+.comp-table th {
+  padding: 14px 18px;
+  text-align: left;
+  background: var(--bg);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.comp-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.comp-table tr:last-child td { border-bottom: none; }
+.comp-table tr:hover td { background: rgba(108,92,231,0.02); }
+.comp-highlight {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ===== Decision Guide ===== */
+#decision { padding-top: 60px; }
+.decision-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.decision-item {
+  display: flex; gap: 14px;
+  padding: 18px 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+.decision-item:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.decision-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.decision-text h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 3px; }
+.decision-text p { font-size: 0.82rem; color: var(--text-muted); }
+.decision-text .rec {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: 0.75rem; font-weight: 700;
+  margin-top: 4px;
+}
+
+/* ===== Analogy Section ===== */
+#analogy { padding-top: 40px; }
+.analogy-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.analogy-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.analogy-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.analogy-emoji { font-size: 40px; margin-bottom: 12px; }
+.analogy-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+.analogy-card .analogy-concept { font-size: 0.82rem; font-weight: 600; margin-bottom: 10px; }
+.analogy-card p { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center;
+  padding: 40px 20px 60px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  section { padding: 60px 16px; }
+  .concept-grid { grid-template-columns: 1fr; }
+  .decision-grid { grid-template-columns: 1fr; }
+  .analogy-container { grid-template-columns: 1fr; }
+  .comp-table { font-size: 0.78rem; }
+  .comp-table th, .comp-table td { padding: 10px 12px; }
+}
+
+/* ===== Interactive Quiz ===== */
+#quiz { padding-top: 60px; }
+.quiz-container {
+  max-width: 680px; margin: 0 auto;
+}
+.quiz-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 32px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+.quiz-card h4 {
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: 16px;
+}
+.quiz-card .quiz-num {
+  display: inline-block;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px; font-weight: 700;
+  text-align: center; line-height: 28px;
+  margin-right: 8px;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.quiz-option:hover { border-color: var(--accent-light); background: rgba(108,92,231,0.03); }
+.quiz-option.selected { border-color: var(--accent); background: rgba(108,92,231,0.06); }
+.quiz-option.correct { border-color: #00b894; background: rgba(0,184,148,0.08); }
+.quiz-option.wrong { border-color: #d63031; background: rgba(214,48,49,0.06); }
+.quiz-option .radio {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.quiz-option.selected .radio { border-color: var(--accent); }
+.quiz-option.selected .radio::after {
+  content: ''; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--accent);
+}
+.quiz-option.correct .radio { border-color: #00b894; }
+.quiz-option.correct .radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #00b894; }
+.quiz-option.wrong .radio { border-color: #d63031; }
+.quiz-feedback {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  display: none;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct-feedback { background: rgba(0,184,148,0.08); color: #00b894; border: 1px solid rgba(0,184,148,0.2); }
+.quiz-feedback.wrong-feedback { background: rgba(214,48,49,0.06); color: #d63031; border: 1px solid rgba(214,48,49,0.2); }
+.quiz-score {
+  text-align: center;
+  padding: 24px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.quiz-score .score-num {
+  font-size: 2.5rem; font-weight: 800;
+  color: var(--accent);
+}
+.quiz-score p { color: var(--text-secondary); margin-top: 8px; }
+.quiz-btn {
+  display: inline-block;
+  padding: 10px 28px;
+  border-radius: 30px;
+  background: var(--accent); color: #fff;
+  border: none; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 12px;
+}
+.quiz-btn:hover { background: #5b4bd5; transform: translateY(-2px); }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation -->
+<nav class="nav" id="mainNav">
+  <a href="#architecture"><span class="nav-icon">&#x1f3d7;</span> <span>구조</span></a>
+  <a href="#concepts"><span class="nav-icon">&#x1f4e6;</span> <span>개념</span></a>
+  <a href="#dataflow"><span class="nav-icon">&#x1f500;</span> <span>흐름</span></a>
+  <a href="#analogy"><span class="nav-icon">&#x1f4a1;</span> <span>비유</span></a>
+  <a href="#comparison"><span class="nav-icon">&#x1f4ca;</span> <span>비교</span></a>
+  <a href="#decision"><span class="nav-icon">&#x1f9ed;</span> <span>가이드</span></a>
+  <a href="#quiz"><span class="nav-icon">&#x1f3af;</span> <span>퀴즈</span></a>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="pulse"></span>
+      Interactive Learning
+    </div>
+    <h1>Claude Code<br><span class="gradient-text">도구 생태계</span> 완전 정복</h1>
+    <p>Tools, Hooks, MCP, Skills, Agents, Plugins 등<br>Claude Code를 이루는 8가지 핵심 개념을 시각적으로 이해합니다</p>
+    <div class="hero-scroll-hint">
+      <span>스크롤하여 시작</span>
+      <div class="arrow"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture Layers -->
+<section id="architecture">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(108,92,231,0.08);color:var(--c-tools);">ARCHITECTURE</div>
+    <h2>계층 구조로 보는 생태계</h2>
+    <p>바깥 계층일수록 안쪽 계층을 감싸고, 구성하고, 확장합니다. 가장 안쪽의 <strong>Built-in Tools</strong>가 모든 것의 기반입니다.</p>
+  </div>
+  <div class="arch-container">
+    <div class="arch-layer layer-plugins" onclick="scrollToCard('plugins')">
+      <div class="layer-num">Layer 8 &middot; 배포 &amp; 패키징</div>
+      <h3>Plugins</h3>
+      <p>Skills + Agents + Hooks + MCP를 하나로 묶어 배포하는 패키지</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-mcp" onclick="scrollToCard('mcp')">
+      <div class="layer-num">Layer 7 &middot; 외부 연결</div>
+      <h3>MCP (Model Context Protocol)</h3>
+      <p>외부 API, 데이터베이스, 클라우드 서비스와 연결하는 표준 프로토콜</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-hooks" onclick="scrollToCard('hooks')">
+      <div class="layer-num">Layer 6 &middot; 자동화 &amp; 제어</div>
+      <h3>Hooks</h3>
+      <p>이벤트 기반으로 <strong>항상</strong> 실행되는 자동화 핸들러</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-agents" onclick="scrollToCard('agents')">
+      <div class="layer-num">Layer 5 &middot; 병렬 실행</div>
+      <h3>Agents / Subagents</h3>
+      <p>독립된 컨텍스트에서 병렬로 작업하는 전문 AI 에이전트</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-skills" onclick="scrollToCard('skills')">
+      <div class="layer-num">Layer 4 &middot; 전문 지식</div>
+      <h3>Skills</h3>
+      <p>필요할 때 로드되는 도메인 전문 지식과 워크플로우</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-claude-md" onclick="scrollToCard('claude-md')">
+      <div class="layer-num">Layer 3 &middot; 영구 기억</div>
+      <h3>CLAUDE.md</h3>
+      <p>매 세션마다 자동으로 로드되는 프로젝트 컨텍스트와 규칙</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-settings" onclick="scrollToCard('settings')">
+      <div class="layer-num">Layer 2 &middot; 설정 &amp; 권한</div>
+      <h3>Settings</h3>
+      <p>권한, 환경 변수, 모델 선택 등 모든 동작을 제어하는 설정</p>
+    </div>
+    <div class="arch-connector"></div>
+    <div class="arch-layer layer-tools" onclick="scrollToCard('tools')">
+      <div class="layer-num">Layer 1 &middot; 핵심 기반</div>
+      <h3>Built-in Tools</h3>
+      <p>Read, Write, Edit, Bash, Glob, Grep 등 Claude의 기본 동작</p>
+    </div>
+  </div>
+</section>
+
+<!-- Concept Detail Cards -->
+<section id="concepts">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(225,112,85,0.08);color:var(--c-skills);">DEEP DIVE</div>
+    <h2>8가지 핵심 개념</h2>
+    <p>각 카드를 클릭하면 상세 정보를 확인할 수 있습니다</p>
+  </div>
+  <div class="concept-grid">
+
+    <!-- Tools -->
+    <div class="concept-card card-tools" id="card-tools">
+      <div class="card-header">
+        <div class="card-icon">&#x1f527;</div>
+        <h3>Built-in Tools</h3>
+        <div class="card-subtitle">Claude의 손과 발</div>
+      </div>
+      <div class="card-body">
+        <p>Claude Code에 내장된 기본 도구들입니다. 파일 읽기/쓰기, 명령어 실행, 검색 등 가장 근본적인 동작을 수행합니다. 모든 다른 개념의 기반이 됩니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">Read</span>
+          <span class="card-tag">Write</span>
+          <span class="card-tag">Edit</span>
+          <span class="card-tag">Bash</span>
+          <span class="card-tag">Glob</span>
+          <span class="card-tag">Grep</span>
+          <span class="card-tag">Task</span>
+          <span class="card-tag">WebSearch</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>주요 도구 목록</h4>
+        <table class="detail-table">
+          <tr><th>도구</th><th>역할</th></tr>
+          <tr><td><strong>Read</strong></td><td>파일 내용 읽기 (이미지, PDF 포함)</td></tr>
+          <tr><td><strong>Write</strong></td><td>파일 생성/덮어쓰기</td></tr>
+          <tr><td><strong>Edit</strong></td><td>기존 파일의 특정 부분 교체</td></tr>
+          <tr><td><strong>Bash</strong></td><td>쉘 명령어 실행</td></tr>
+          <tr><td><strong>Glob</strong></td><td>파일 패턴 검색 (예: *.ts)</td></tr>
+          <tr><td><strong>Grep</strong></td><td>파일 내용 정규식 검색</td></tr>
+          <tr><td><strong>Task</strong></td><td>서브에이전트 생성</td></tr>
+          <tr><td><strong>WebFetch/Search</strong></td><td>웹 콘텐츠 가져오기/검색</td></tr>
+        </table>
+        <h4>핵심 포인트</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)">항상 사용 가능하며, Settings의 권한 설정으로 허용/거부를 제어할 수 있습니다. MCP 도구도 이 도구들과 동일한 방식으로 사용됩니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="concept-card card-settings" id="card-settings">
+      <div class="card-header">
+        <div class="card-icon">&#x2699;</div>
+        <h3>Settings</h3>
+        <div class="card-subtitle">모든 것의 제어판</div>
+      </div>
+      <div class="card-body">
+        <p>JSON 설정 파일로 Claude Code의 권한, 환경 변수, Hooks, 플러그인 활성화, UI 언어 등 모든 동작을 제어합니다. 여러 범위(managed, user, project)에서 계층적으로 적용됩니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">권한 제어</span>
+          <span class="card-tag">환경 변수</span>
+          <span class="card-tag">Hooks 정의</span>
+          <span class="card-tag">Plugin 활성화</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>설정 파일 우선순위 (높은순)</h4>
+        <table class="detail-table">
+          <tr><th>범위</th><th>위치</th></tr>
+          <tr><td><strong>Managed</strong></td><td>/Library/.../managed-settings.json</td></tr>
+          <tr><td><strong>CLI 인수</strong></td><td>명령줄 플래그 (세션 한정)</td></tr>
+          <tr><td><strong>로컬 프로젝트</strong></td><td>.claude/settings.local.json</td></tr>
+          <tr><td><strong>공유 프로젝트</strong></td><td>.claude/settings.json</td></tr>
+          <tr><td><strong>사용자</strong></td><td>~/.claude/settings.json</td></tr>
+        </table>
+        <h4>핵심 포인트</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)">Hooks, Plugin 활성화, 권한 규칙 등이 모두 Settings 안에 정의됩니다. "설정의 설정"이자 모든 것의 컨테이너입니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- CLAUDE.md -->
+    <div class="concept-card card-claude-md" id="card-claude-md">
+      <div class="card-header">
+        <div class="card-icon">&#x1f4dd;</div>
+        <h3>CLAUDE.md</h3>
+        <div class="card-subtitle">세션을 넘는 기억</div>
+      </div>
+      <div class="card-body">
+        <p>매 세션 시작 시 자동으로 로드되는 마크다운 파일입니다. 프로젝트 구조, 코딩 규칙, 아키텍처 결정 등 영구적 지침을 담습니다. Skills와 달리 <strong>항상</strong> 컨텍스트에 포함됩니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">항상 로드</span>
+          <span class="card-tag">영구 규칙</span>
+          <span class="card-tag">프로젝트 컨텍스트</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>파일 위치</h4>
+        <table class="detail-table">
+          <tr><th>범위</th><th>위치</th></tr>
+          <tr><td><strong>사용자 전역</strong></td><td>~/.claude/CLAUDE.md</td></tr>
+          <tr><td><strong>프로젝트 공유</strong></td><td>CLAUDE.md 또는 .claude/CLAUDE.md</td></tr>
+          <tr><td><strong>프로젝트 로컬</strong></td><td>.claude/CLAUDE.local.md</td></tr>
+        </table>
+        <h4>CLAUDE.md vs Skills</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)"><strong>CLAUDE.md</strong>는 항상 로드 (컨텍스트 비용 고정), <strong>Skills</strong>는 필요할 때만 로드 (컨텍스트 절약). 보편적 규칙은 CLAUDE.md에, 특수 워크플로우는 Skills에 넣습니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="concept-card card-skills" id="card-skills">
+      <div class="card-header">
+        <div class="card-icon">&#x1f3af;</div>
+        <h3>Skills</h3>
+        <div class="card-subtitle">온디맨드 전문가</div>
+      </div>
+      <div class="card-body">
+        <p>필요할 때만 로드되는 도메인 전문 지식 패키지입니다. SKILL.md 파일에 지침을 정의하고, Claude가 관련성이 있으면 자동 호출하거나, 사용자가 <code>/skill-name</code>으로 수동 호출합니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">SKILL.md</span>
+          <span class="card-tag">온디맨드</span>
+          <span class="card-tag">/slash-command</span>
+          <span class="card-tag">$ARGUMENTS</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>SKILL.md 구성</h4>
+        <table class="detail-table">
+          <tr><th>필드</th><th>설명</th></tr>
+          <tr><td><strong>name</strong></td><td>스킬 이름 (슬래시 커맨드)</td></tr>
+          <tr><td><strong>description</strong></td><td>자동 호출 판단 기준</td></tr>
+          <tr><td><strong>context: fork</strong></td><td>별도 서브에이전트에서 실행</td></tr>
+          <tr><td><strong>allowed-tools</strong></td><td>사용 가능 도구 제한</td></tr>
+          <tr><td><strong>!`cmd`</strong></td><td>동적 컨텍스트 주입 (쉘 실행)</td></tr>
+        </table>
+        <h4>저장 위치</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)"><code>~/.claude/skills/</code> (개인), <code>.claude/skills/</code> (프로젝트), 플러그인 내부 (네임스페이스). 동적 컨텍스트 주입 <code>!`cmd`</code>으로 라이브 데이터를 스킬에 넣을 수 있습니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="concept-card card-agents" id="card-agents">
+      <div class="card-header">
+        <div class="card-icon">&#x1f916;</div>
+        <h3>Agents / Subagents</h3>
+        <div class="card-subtitle">병렬 분신술</div>
+      </div>
+      <div class="card-body">
+        <p>Task 도구로 생성되는 독립 AI 에이전트입니다. 각자 별도의 컨텍스트 윈도우에서 작업하며, 최대 10개까지 동시 실행됩니다. 무거운 작업을 메인 대화에서 분리합니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">Task 도구</span>
+          <span class="card-tag">독립 컨텍스트</span>
+          <span class="card-tag">병렬 실행</span>
+          <span class="card-tag">커스텀 에이전트</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>내장 에이전트 타입</h4>
+        <table class="detail-table">
+          <tr><th>타입</th><th>모델</th><th>용도</th></tr>
+          <tr><td><strong>Explore</strong></td><td>Haiku</td><td>빠른 코드베이스 탐색</td></tr>
+          <tr><td><strong>Plan</strong></td><td>상속</td><td>구현 계획 설계</td></tr>
+          <tr><td><strong>general-purpose</strong></td><td>상속</td><td>모든 도구 사용 가능</td></tr>
+          <tr><td><strong>Bash</strong></td><td>상속</td><td>터미널 명령 전용</td></tr>
+        </table>
+        <h4>핵심 제약</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)"><strong>중첩 불가</strong>: 서브에이전트 안에서 또 다른 서브에이전트를 생성할 수 없습니다. 커스텀 에이전트는 <code>~/.claude/agents/</code>에 마크다운 파일로 정의합니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Hooks -->
+    <div class="concept-card card-hooks" id="card-hooks">
+      <div class="card-header">
+        <div class="card-icon">&#x1f6a8;</div>
+        <h3>Hooks</h3>
+        <div class="card-subtitle">결정론적 자동화</div>
+      </div>
+      <div class="card-body">
+        <p>특정 이벤트에서 <strong>항상, 확정적으로</strong> 실행되는 핸들러입니다. Claude의 판단 없이 조건이 맞으면 무조건 실행됩니다. 검증, 차단, 로깅, 알림 등에 사용합니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">PreToolUse</span>
+          <span class="card-tag">PostToolUse</span>
+          <span class="card-tag">SessionStart</span>
+          <span class="card-tag">Stop</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>주요 이벤트</h4>
+        <table class="detail-table">
+          <tr><th>이벤트</th><th>시점</th><th>차단 가능</th></tr>
+          <tr><td><strong>SessionStart</strong></td><td>세션 시작</td><td>&#10005;</td></tr>
+          <tr><td><strong>UserPromptSubmit</strong></td><td>사용자 입력 후</td><td>&#10003;</td></tr>
+          <tr><td><strong>PreToolUse</strong></td><td>도구 실행 전</td><td>&#10003;</td></tr>
+          <tr><td><strong>PostToolUse</strong></td><td>도구 실행 후</td><td>&#10005;</td></tr>
+          <tr><td><strong>Stop</strong></td><td>응답 완료 시</td><td>&#10003;</td></tr>
+          <tr><td><strong>PreCompact</strong></td><td>컨텍스트 압축 전</td><td>&#10005;</td></tr>
+        </table>
+        <h4>Hooks vs Skills</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)"><strong>Hooks</strong>는 결정론적 (항상 실행), <strong>Skills</strong>는 확률적 (Claude가 판단). Hooks는 자동화/검증에, Skills는 전문 지식에 사용합니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- MCP -->
+    <div class="concept-card card-mcp" id="card-mcp">
+      <div class="card-header">
+        <div class="card-icon">&#x1f310;</div>
+        <h3>MCP</h3>
+        <div class="card-subtitle">외부 세계의 다리</div>
+      </div>
+      <div class="card-body">
+        <p>Model Context Protocol - 외부 도구, 데이터베이스, API와 연결하는 표준 프로토콜입니다. MCP 서버가 도구를 제공하면, Claude는 내장 도구처럼 <code>mcp__서버__도구</code> 형식으로 사용합니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">외부 API 연결</span>
+          <span class="card-tag">표준 프로토콜</span>
+          <span class="card-tag">mcp__server__tool</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>전송 방식</h4>
+        <table class="detail-table">
+          <tr><th>방식</th><th>용도</th></tr>
+          <tr><td><strong>http</strong></td><td>원격 클라우드 서비스 (권장)</td></tr>
+          <tr><td><strong>sse</strong></td><td>서버 이벤트 (레거시)</td></tr>
+          <tr><td><strong>stdio</strong></td><td>로컬 프로세스</td></tr>
+        </table>
+        <h4>설정 위치</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)"><code>~/.claude.json</code> (사용자), <code>.mcp.json</code> (프로젝트), 플러그인 내부. 도구가 컨텍스트의 10% 이상을 차지하면 자동으로 Lazy Loading이 활성화됩니다.</p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Plugins -->
+    <div class="concept-card card-plugins" id="card-plugins">
+      <div class="card-header">
+        <div class="card-icon">&#x1f4e6;</div>
+        <h3>Plugins</h3>
+        <div class="card-subtitle">올인원 확장팩</div>
+      </div>
+      <div class="card-body">
+        <p>Skills, Agents, Hooks, MCP, LSP를 하나로 묶은 배포 가능한 패키지입니다. 마켓플레이스에서 설치하며, 네임스페이스로 충돌 없이 관리됩니다. <code>plugin.json</code> 매니페스트로 정의합니다.</p>
+        <div class="card-tags">
+          <span class="card-tag">plugin.json</span>
+          <span class="card-tag">마켓플레이스</span>
+          <span class="card-tag">번들 패키지</span>
+          <span class="card-tag">버전 관리</span>
+        </div>
+      </div>
+      <div class="card-detail">
+        <h4>플러그인에 포함 가능한 것</h4>
+        <table class="detail-table">
+          <tr><th>구성요소</th><th>위치</th></tr>
+          <tr><td><strong>Skills</strong></td><td>skills/ (SKILL.md 파일)</td></tr>
+          <tr><td><strong>Agents</strong></td><td>agents/ (마크다운 파일)</td></tr>
+          <tr><td><strong>Hooks</strong></td><td>hooks/hooks.json</td></tr>
+          <tr><td><strong>MCP 서버</strong></td><td>.mcp.json</td></tr>
+          <tr><td><strong>LSP 서버</strong></td><td>.lsp.json (코드 인텔리전스)</td></tr>
+        </table>
+        <h4>핵심 포인트</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary)">단독 Skills/Hooks와 달리 <strong>버전 관리</strong>와 <strong>마켓플레이스 배포</strong>가 가능합니다. 네임스페이스: <code>/plugin-name:skill-name</code></p>
+      </div>
+      <div class="card-toggle" onclick="toggleCard(this)">
+        <span>자세히 보기</span>
+        <span class="toggle-arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Data Flow -->
+<section id="dataflow">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(9,132,227,0.08);color:var(--c-agents);">DATA FLOW</div>
+    <h2>요청이 처리되는 흐름</h2>
+    <p>사용자 입력부터 응답 완료까지, 각 단계에서 어떤 개념이 개입하는지 보여줍니다</p>
+  </div>
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(108,92,231,0.1);color:var(--c-tools);">&#x1f4ac;</div>
+      <div class="flow-text">
+        <h4>사용자 입력</h4>
+        <p>프롬프트 또는 /slash-command 입력</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(214,48,49,0.1);color:var(--c-hooks);">&#x1f6a8;</div>
+      <div class="flow-text">
+        <h4>UserPromptSubmit <span class="flow-hook-badge">HOOK</span></h4>
+        <p>입력 검증, 키워드 감지, 컨텍스트 주입</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(253,203,110,0.15);color:#d4a017;">&#x1f4dd;</div>
+      <div class="flow-text">
+        <h4>CLAUDE.md + Skills 로드</h4>
+        <p>영구 지침 적용 + 관련 스킬 자동 활성화</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(108,92,231,0.1);color:var(--c-tools);">&#x1f9e0;</div>
+      <div class="flow-text">
+        <h4>Claude가 도구 호출 결정</h4>
+        <p>내장 도구 또는 MCP 도구 선택</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(214,48,49,0.1);color:var(--c-hooks);">&#x1f6e1;</div>
+      <div class="flow-text">
+        <h4>PreToolUse <span class="flow-hook-badge">HOOK</span></h4>
+        <p>허용/거부/수정 &mdash; 도구 실행 전 검증</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(108,92,231,0.1);color:var(--c-tools);">&#x2699;</div>
+      <div class="flow-text">
+        <h4>도구 실행</h4>
+        <p>Built-in 또는 MCP 도구가 실제 작업 수행</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(214,48,49,0.1);color:var(--c-hooks);">&#x1f4cb;</div>
+      <div class="flow-text">
+        <h4>PostToolUse <span class="flow-hook-badge">HOOK</span></h4>
+        <p>결과 기반 피드백, 린트, 로깅</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(9,132,227,0.1);color:var(--c-agents);">&#x1f916;</div>
+      <div class="flow-text">
+        <h4>서브에이전트 생성 (선택)</h4>
+        <p>Task 도구로 병렬 작업 위임</p>
+      </div>
+    </div>
+    <div class="flow-arrow"><svg viewBox="0 0 20 20"><path d="M10 4 L10 14 M6 10 L10 14 L14 10" stroke="currentColor" fill="none" stroke-width="2"/></svg></div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(214,48,49,0.1);color:var(--c-hooks);">&#x1f3c1;</div>
+      <div class="flow-text">
+        <h4>Stop <span class="flow-hook-badge">HOOK</span></h4>
+        <p>응답 완료 검증, 알림 전송</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Analogy Section -->
+<section id="analogy">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(253,203,110,0.1);color:#d4a017;">ANALOGY</div>
+    <h2>레스토랑으로 이해하는 비유</h2>
+    <p>Claude Code를 레스토랑에 비유하면 각 개념의 역할이 더 명확해집니다</p>
+  </div>
+  <div class="analogy-container">
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f52a;</div>
+      <h4>Built-in Tools</h4>
+      <div class="analogy-concept" style="color:var(--c-tools);">= 주방 도구</div>
+      <p>칼, 프라이팬, 오븐 등 요리의 기본 도구. 없으면 아무것도 만들 수 없습니다.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f4cb;</div>
+      <h4>Settings</h4>
+      <div class="analogy-concept" style="color:var(--c-settings);">= 주방 규칙</div>
+      <p>"가스레인지 사용 시 환풍기 켜기", "칼은 A 구역에서만 사용" 등 주방 운영 규칙.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f4d6;</div>
+      <h4>CLAUDE.md</h4>
+      <div class="analogy-concept" style="color:#d4a017;">= 레스토랑 매뉴얼</div>
+      <p>출근하면 항상 읽는 매뉴얼. "우리 가게는 한식 전문", "MSG 사용 금지" 같은 영구 규칙.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f468;&#x200d;&#x1f373;</div>
+      <h4>Skills</h4>
+      <div class="analogy-concept" style="color:var(--c-skills);">= 전문 레시피</div>
+      <p>특정 요리가 주문되면 꺼내 보는 상세 레시피. 항상 펼쳐두진 않지만 필요할 때 꺼냅니다.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f46c;</div>
+      <h4>Subagents</h4>
+      <div class="analogy-concept" style="color:var(--c-agents);">= 보조 셰프</div>
+      <p>메인 셰프가 "디저트는 네가 해"라고 위임하면, 별도 조리대에서 독립적으로 작업합니다.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f6a8;</div>
+      <h4>Hooks</h4>
+      <div class="analogy-concept" style="color:var(--c-hooks);">= 자동 타이머 / 화재경보</div>
+      <p>오븐 열면 자동으로 타이머 시작, 연기 감지 시 무조건 경보. 의지와 무관하게 <strong>항상</strong> 작동합니다.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f69a;</div>
+      <h4>MCP</h4>
+      <div class="analogy-concept" style="color:var(--c-mcp);">= 식재료 납품업체</div>
+      <p>외부에서 재료를 공급하는 업체. 표준 계약(프로토콜)으로 연결되어 다양한 식재료를 받을 수 있습니다.</p>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-emoji">&#x1f381;</div>
+      <h4>Plugins</h4>
+      <div class="analogy-concept" style="color:var(--c-plugins);">= 프랜차이즈 패키지</div>
+      <p>레시피 + 규칙 + 장비 + 납품업체를 한 번에 제공하는 프랜차이즈 시작 키트.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison Tables -->
+<section id="comparison">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(232,67,147,0.08);color:var(--c-plugins);">COMPARISON</div>
+    <h2>헷갈리는 개념 비교</h2>
+    <p>유사해 보이는 개념들의 차이를 명확히 구분합니다</p>
+  </div>
+  <div class="comparison-tabs">
+    <div class="comp-tab active" onclick="switchTab(this, 'comp-1')">Skills vs Hooks</div>
+    <div class="comp-tab" onclick="switchTab(this, 'comp-2')">Skills vs CLAUDE.md</div>
+    <div class="comp-tab" onclick="switchTab(this, 'comp-3')">MCP vs Plugins</div>
+    <div class="comp-tab" onclick="switchTab(this, 'comp-4')">전체 비교</div>
+  </div>
+
+  <div class="comp-panel active" id="comp-1">
+    <table class="comp-table">
+      <tr><th></th><th style="color:var(--c-skills);">Skills</th><th style="color:var(--c-hooks);">Hooks</th></tr>
+      <tr><td><strong>실행 방식</strong></td><td>확률적 (Claude가 판단) 또는 수동 호출</td><td><span class="comp-highlight" style="background:rgba(214,48,49,0.08);color:var(--c-hooks);">결정론적 (항상 실행)</span></td></tr>
+      <tr><td><strong>목적</strong></td><td>도메인 전문 지식 &amp; 워크플로우</td><td>자동화, 검증, 차단, 로깅</td></tr>
+      <tr><td><strong>산출물</strong></td><td>Claude의 사고 방식을 가이드</td><td>Claude의 행동을 제어 (차단/허용)</td></tr>
+      <tr><td><strong>신뢰성</strong></td><td>Best-effort (안 쓸 수도 있음)</td><td><span class="comp-highlight" style="background:rgba(214,48,49,0.08);color:var(--c-hooks);">보장 실행</span></td></tr>
+      <tr><td><strong>비유</strong></td><td>참고하는 전문 레시피</td><td>오븐 타이머 (무조건 울림)</td></tr>
+    </table>
+  </div>
+
+  <div class="comp-panel" id="comp-2">
+    <table class="comp-table">
+      <tr><th></th><th style="color:#d4a017;">CLAUDE.md</th><th style="color:var(--c-skills);">Skills</th></tr>
+      <tr><td><strong>로딩</strong></td><td><span class="comp-highlight" style="background:rgba(253,203,110,0.15);color:#b88d0f;">항상 자동 로드</span></td><td>필요 시에만 로드</td></tr>
+      <tr><td><strong>컨텍스트 비용</strong></td><td>고정 (매 세션 차지)</td><td><span class="comp-highlight" style="background:rgba(225,112,85,0.08);color:var(--c-skills);">온디맨드 (절약)</span></td></tr>
+      <tr><td><strong>범위</strong></td><td>보편적 (모든 작업에 적용)</td><td>좁음 (특정 도메인)</td></tr>
+      <tr><td><strong>적합한 내용</strong></td><td>아키텍처, 코딩 규칙, 프로젝트 구조</td><td>TDD 워크플로우, 커밋 규칙 등</td></tr>
+      <tr><td><strong>비유</strong></td><td>항상 읽는 사원 매뉴얼</td><td>특정 요리의 레시피북</td></tr>
+    </table>
+  </div>
+
+  <div class="comp-panel" id="comp-3">
+    <table class="comp-table">
+      <tr><th></th><th style="color:var(--c-mcp);">MCP</th><th style="color:var(--c-plugins);">Plugins</th></tr>
+      <tr><td><strong>정체</strong></td><td>외부 도구 연결 프로토콜</td><td>번들 패키지 (Skills+Hooks+MCP 포함)</td></tr>
+      <tr><td><strong>제공하는 것</strong></td><td>도구, 리소스, 프롬프트</td><td><span class="comp-highlight" style="background:rgba(232,67,147,0.08);color:var(--c-plugins);">모든 것 (Skills+Agents+Hooks+MCP+LSP)</span></td></tr>
+      <tr><td><strong>배포</strong></td><td><code>claude mcp add</code></td><td>마켓플레이스 설치</td></tr>
+      <tr><td><strong>버전 관리</strong></td><td>서버 자체 관리</td><td>시맨틱 버전 관리</td></tr>
+      <tr><td><strong>관계</strong></td><td>Plugin의 한 구성요소가 될 수 있음</td><td>MCP를 포함할 수 있음</td></tr>
+    </table>
+  </div>
+
+  <div class="comp-panel" id="comp-4">
+    <table class="comp-table">
+      <tr>
+        <th>개념</th><th>정체</th><th>트리거</th><th>목적</th>
+      </tr>
+      <tr>
+        <td style="color:var(--c-tools);font-weight:700;">Tools</td>
+        <td>내장 동작</td><td>Claude 결정</td><td>기본 작업 수행</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-settings);font-weight:700;">Settings</td>
+        <td>JSON 설정</td><td>파일 편집</td><td>모든 것을 제어</td>
+      </tr>
+      <tr>
+        <td style="color:#d4a017;font-weight:700;">CLAUDE.md</td>
+        <td>마크다운 지침</td><td>세션 시작 자동</td><td>영구 규칙/컨텍스트</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-skills);font-weight:700;">Skills</td>
+        <td>전문 지식 패키지</td><td>자동 또는 수동</td><td>도메인 전문성</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-agents);font-weight:700;">Agents</td>
+        <td>독립 AI 프로세스</td><td>Task 도구</td><td>병렬/분리 실행</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-hooks);font-weight:700;">Hooks</td>
+        <td>이벤트 핸들러</td><td>이벤트 발생 시</td><td>자동화/검증/제어</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-mcp);font-weight:700;">MCP</td>
+        <td>연결 프로토콜</td><td>Claude 결정</td><td>외부 시스템 연결</td>
+      </tr>
+      <tr>
+        <td style="color:var(--c-plugins);font-weight:700;">Plugins</td>
+        <td>배포 번들</td><td>설치/활성화</td><td>기능 패키징/배포</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- Decision Guide -->
+<section id="decision">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(0,184,148,0.08);color:var(--c-settings);">GUIDE</div>
+    <h2>"이것" 하려면 "이것" 사용</h2>
+    <p>상황별로 어떤 개념을 사용해야 하는지 빠르게 찾아보세요</p>
+  </div>
+  <div class="decision-grid">
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(108,92,231,0.1);color:var(--c-tools);">&#x1f4c4;</div>
+      <div class="decision-text">
+        <h4>파일 읽기/쓰기/검색</h4>
+        <p>파일 시스템과 직접 상호작용</p>
+        <span class="rec" style="background:rgba(108,92,231,0.08);color:var(--c-tools);">Built-in Tools</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(0,184,148,0.1);color:var(--c-settings);">&#x1f512;</div>
+      <div class="decision-text">
+        <h4>특정 도구 사용 제한</h4>
+        <p>권한, 환경 변수, UI 설정</p>
+        <span class="rec" style="background:rgba(0,184,148,0.08);color:var(--c-settings);">Settings</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(253,203,110,0.15);color:#d4a017;">&#x1f4cc;</div>
+      <div class="decision-text">
+        <h4>프로젝트 규칙 영구 저장</h4>
+        <p>"항상 TypeScript 사용", "테스트 필수"</p>
+        <span class="rec" style="background:rgba(253,203,110,0.12);color:#b88d0f;">CLAUDE.md</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(225,112,85,0.1);color:var(--c-skills);">&#x1f4da;</div>
+      <div class="decision-text">
+        <h4>특수 워크플로우 정의</h4>
+        <p>TDD, 코드리뷰, 커밋 규칙 등</p>
+        <span class="rec" style="background:rgba(225,112,85,0.08);color:var(--c-skills);">Skills</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(9,132,227,0.1);color:var(--c-agents);">&#x1f504;</div>
+      <div class="decision-text">
+        <h4>무거운 작업 분리 실행</h4>
+        <p>병렬 처리, 컨텍스트 보호</p>
+        <span class="rec" style="background:rgba(9,132,227,0.08);color:var(--c-agents);">Subagents</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(214,48,49,0.1);color:var(--c-hooks);">&#x2705;</div>
+      <div class="decision-text">
+        <h4>무조건 자동 검증/로깅</h4>
+        <p>파일 저장 시 린트, 알림 전송</p>
+        <span class="rec" style="background:rgba(214,48,49,0.08);color:var(--c-hooks);">Hooks</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(0,206,201,0.1);color:var(--c-mcp);">&#x1f517;</div>
+      <div class="decision-text">
+        <h4>외부 API/DB 연결</h4>
+        <p>GitHub, Slack, DB 등 외부 서비스</p>
+        <span class="rec" style="background:rgba(0,206,201,0.08);color:var(--c-mcp);">MCP</span>
+      </div>
+    </div>
+    <div class="decision-item">
+      <div class="decision-icon" style="background:rgba(232,67,147,0.1);color:var(--c-plugins);">&#x1f4e4;</div>
+      <div class="decision-text">
+        <h4>기능 세트 배포/공유</h4>
+        <p>팀/마켓플레이스에 기능 배포</p>
+        <span class="rec" style="background:rgba(232,67,147,0.08);color:var(--c-plugins);">Plugins</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quiz Section -->
+<section id="quiz">
+  <div class="section-header">
+    <div class="section-tag" style="background:rgba(108,92,231,0.08);color:var(--c-tools);">QUIZ</div>
+    <h2>이해도 확인 퀴즈</h2>
+    <p>각 문항을 클릭해서 정답을 확인하세요</p>
+  </div>
+  <div class="quiz-container" id="quizContainer">
+    <!-- Quiz cards will be generated by JS -->
+  </div>
+  <div class="quiz-score" id="quizScore" style="display:none;">
+    <div class="score-num" id="scoreNum">0/0</div>
+    <p id="scoreMsg"></p>
+    <button class="quiz-btn" onclick="resetQuiz()">다시 풀기</button>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Claude Code 도구 생태계 인터랙티브 학습 &middot; 2026</p>
+  <p style="margin-top:4px;">Built with <a href="https://claude.com/claude-code" target="_blank">Claude Code</a></p>
+</div>
+
+<script>
+// ===== GSAP Setup =====
+gsap.registerPlugin(ScrollTrigger);
+
+// ===== Progress Bar =====
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// ===== Nav visibility & active =====
+const nav = document.getElementById('mainNav');
+const sections = document.querySelectorAll('section[id]');
+const navLinks = nav.querySelectorAll('a');
+
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('visible', window.scrollY > window.innerHeight * 0.6);
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 200) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+
+// ===== GSAP Scroll Animations =====
+// Architecture layers
+gsap.utils.toArray('.arch-layer').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' },
+    opacity: 0, y: 30, duration: 0.5, delay: i * 0.08
+  });
+});
+gsap.utils.toArray('.arch-connector').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' },
+    scaleY: 0, duration: 0.3, delay: i * 0.08
+  });
+});
+
+// Concept cards
+gsap.utils.toArray('.concept-card').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' },
+    opacity: 0, y: 40, duration: 0.6, delay: (i % 2) * 0.1
+  });
+});
+
+// Flow steps
+gsap.utils.toArray('.flow-step').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' },
+    opacity: 0, x: -30, duration: 0.5, delay: i * 0.06
+  });
+});
+
+// Analogy cards
+gsap.utils.toArray('.analogy-card').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' },
+    opacity: 0, scale: 0.9, duration: 0.5, delay: i * 0.08
+  });
+});
+
+// Decision items
+gsap.utils.toArray('.decision-item').forEach((el, i) => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play none none reverse' },
+    opacity: 0, y: 20, duration: 0.4, delay: (i % 4) * 0.06
+  });
+});
+
+// ===== Card Toggle =====
+function toggleCard(btn) {
+  const card = btn.closest('.concept-card');
+  card.classList.toggle('expanded');
+  const span = btn.querySelector('span:first-child');
+  span.textContent = card.classList.contains('expanded') ? '접기' : '자세히 보기';
+}
+
+// ===== Scroll to Card =====
+function scrollToCard(id) {
+  const el = document.getElementById('card-' + id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.transition = 'box-shadow 0.3s ease';
+    el.style.boxShadow = '0 0 0 3px var(--accent), 0 12px 40px rgba(108,92,231,0.2)';
+    setTimeout(() => { el.style.boxShadow = ''; }, 2000);
+  }
+}
+
+// ===== Comparison Tabs =====
+function switchTab(tab, panelId) {
+  document.querySelectorAll('.comp-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.comp-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ===== Quiz =====
+const quizData = [
+  {
+    q: '매 세션 시작 시 항상 자동으로 로드되어 컨텍스트를 차지하는 것은?',
+    opts: ['Skills', 'CLAUDE.md', 'Hooks', 'Plugins'],
+    answer: 1,
+    explain: 'CLAUDE.md는 매 세션 시작 시 자동으로 로드되어 영구적으로 컨텍스트에 포함됩니다. Skills는 필요 시에만 로드됩니다.'
+  },
+  {
+    q: 'Claude의 판단과 무관하게 조건이 맞으면 항상 실행되는 것은?',
+    opts: ['Skills', 'Subagents', 'Hooks', 'MCP'],
+    answer: 2,
+    explain: 'Hooks는 결정론적(deterministic)입니다. 이벤트와 matcher가 일치하면 Claude의 판단 없이 무조건 실행됩니다.'
+  },
+  {
+    q: '외부 API, 데이터베이스 등에 연결하기 위한 표준 프로토콜은?',
+    opts: ['Plugins', 'Hooks', 'Skills', 'MCP'],
+    answer: 3,
+    explain: 'MCP(Model Context Protocol)는 외부 도구와 서비스에 연결하는 표준 프로토콜입니다. 도구 이름은 mcp__서버__도구 형식입니다.'
+  },
+  {
+    q: 'Skills + Agents + Hooks + MCP를 하나로 묶어 배포할 수 있는 것은?',
+    opts: ['Settings', 'CLAUDE.md', 'Plugins', 'Subagents'],
+    answer: 2,
+    explain: 'Plugins는 여러 구성요소를 하나로 번들링하여 마켓플레이스를 통해 배포할 수 있는 패키지입니다.'
+  },
+  {
+    q: '서브에이전트에 대한 설명 중 올바른 것은?',
+    opts: ['서브에이전트는 중첩 생성이 가능하다', '서브에이전트는 메인 대화의 컨텍스트를 공유한다', '서브에이전트는 독립된 컨텍스트 윈도우에서 실행된다', '서브에이전트는 최대 3개까지 동시 실행된다'],
+    answer: 2,
+    explain: '서브에이전트는 각자 독립된 컨텍스트 윈도우에서 작업합니다. 중첩 생성은 불가능하며, 최대 10개까지 동시 실행됩니다.'
+  },
+  {
+    q: 'PreToolUse 훅이 할 수 있는 것은?',
+    opts: ['도구 실행 결과 수정', '도구 실행 차단(block)', '새로운 도구 생성', '세션 종료'],
+    answer: 1,
+    explain: 'PreToolUse 훅은 도구 실행 전에 실행되며, 허용(allow), 거부(deny), 또는 사용자 확인(ask) 등으로 실행을 제어할 수 있습니다.'
+  }
+];
+
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  quizAnswered = 0;
+  quizCorrect = 0;
+  document.getElementById('quizScore').style.display = 'none';
+
+  quizData.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <h4><span class="quiz-num">${qi + 1}</span>${q.q}</h4>
+      <div class="quiz-options">
+        ${q.opts.map((o, oi) => `
+          <div class="quiz-option" data-qi="${qi}" data-oi="${oi}" onclick="selectAnswer(this, ${qi}, ${oi})">
+            <span class="radio"></span>
+            <span>${o}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="feedback-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(el, qi, oi) {
+  const card = el.closest('.quiz-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = 'true';
+
+  const options = card.querySelectorAll('.quiz-option');
+  const correct = quizData[qi].answer;
+
+  options.forEach(opt => {
+    const idx = parseInt(opt.dataset.oi);
+    if (idx === correct) opt.classList.add('correct');
+    if (idx === oi && idx !== correct) opt.classList.add('wrong');
+  });
+  el.classList.add('selected');
+
+  const feedback = document.getElementById('feedback-' + qi);
+  feedback.classList.add('show');
+  if (oi === correct) {
+    feedback.classList.add('correct-feedback');
+    feedback.textContent = '정답! ' + quizData[qi].explain;
+    quizCorrect++;
+  } else {
+    feedback.classList.add('wrong-feedback');
+    feedback.textContent = '오답. ' + quizData[qi].explain;
+  }
+
+  quizAnswered++;
+  if (quizAnswered === quizData.length) {
+    setTimeout(showScore, 600);
+  }
+}
+
+function showScore() {
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.style.display = 'block';
+  document.getElementById('scoreNum').textContent = quizCorrect + '/' + quizData.length;
+  const pct = Math.round((quizCorrect / quizData.length) * 100);
+  const msgs = pct === 100 ? '완벽합니다! Claude Code 도구 생태계를 완전히 이해했어요.' :
+               pct >= 67 ? '좋습니다! 대부분의 개념을 잘 이해하고 있어요.' :
+               '다시 한번 학습해보세요. 각 개념의 차이에 집중해보세요.';
+  document.getElementById('scoreMsg').textContent = msgs;
+  scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetQuiz() {
+  renderQuiz();
+  document.getElementById('quizContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+renderQuiz();
+
+// ===== Hero Canvas - Particle Network =====
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouse = { x: -1000, y: -1000 };
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.r = Math.random() * 2 + 1;
+    this.color = ['rgba(108,92,231,', 'rgba(0,206,201,', 'rgba(225,112,85,', 'rgba(162,155,254,'][Math.floor(Math.random() * 4)];
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    // Mouse repel
+    const dx = this.x - mouse.x, dy = this.y - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 120) {
+      this.x += dx / dist * 1.5;
+      this.y += dy / dist * 1.5;
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.color + '0.6)';
+    ctx.fill();
+  }
+}
+
+const count = Math.min(80, Math.floor(window.innerWidth * 0.06));
+for (let i = 0; i < count; i++) particles.push(new Particle());
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = 'rgba(108,92,231,' + (1 - dist / 120) * 0.15 + ')';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
+canvas.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
+
+// ===== Hero content animation =====
+gsap.from('.hero-badge', { opacity: 0, y: 20, duration: 0.8, delay: 0.3 });
+gsap.from('.hero h1', { opacity: 0, y: 30, duration: 0.8, delay: 0.5 });
+gsap.from('.hero p', { opacity: 0, y: 20, duration: 0.8, delay: 0.7 });
+gsap.from('.hero-scroll-hint', { opacity: 0, duration: 0.8, delay: 1.2 });
+</script>
+</body>
+</html>

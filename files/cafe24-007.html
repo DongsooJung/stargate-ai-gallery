@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 시대 수학 학습법 — 학부모 가이드</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0B1D3A;--teal:#0D9488;--teal-dark:#0F766E;--teal-light:#99F6E4;--cream:#FBF7F0;--white:#FFF;--g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;--g400:#9CA3AF;--g600:#4B5563;--g800:#1F2937;--red:#DC2626;--green:#059669;--radius:12px;--max-w:860px}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--g800);background:var(--white);line-height:1.7;-webkit-font-smoothing:antialiased}
+.dw{max-width:var(--max-w);margin:0 auto;overflow:hidden}
+
+/* HERO - Warm teal for parent-friendly feel */
+.hero{background:linear-gradient(160deg,var(--teal-dark) 0%,var(--teal) 50%,#14B8A6 100%);padding:56px 32px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60%;right:-20%;width:500px;height:500px;background:radial-gradient(circle,rgba(255,255,255,0.08) 0%,transparent 70%);border-radius:50%}
+.hb{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:6px 18px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.9);margin-bottom:24px;position:relative;z-index:1}
+.hb::before{content:'👨‍👩‍👧';font-size:14px}
+.hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(26px,5vw,38px);font-weight:900;color:var(--white);line-height:1.35;margin-bottom:12px;position:relative;z-index:1}
+.hero h1 em{font-style:normal;color:#FDE68A}
+.hs{font-size:16px;color:rgba(255,255,255,0.75);font-weight:300;position:relative;z-index:1;margin-bottom:32px}
+.ht{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;position:relative;z-index:1}
+.ht span{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,0.85)}
+
+/* PROBLEM */
+.prob{background:var(--cream);padding:48px 32px}
+.pt{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:700;text-align:center;color:var(--navy);margin-bottom:32px;line-height:1.5}
+.pt em{font-style:normal;color:var(--red);text-decoration:underline;text-decoration-color:rgba(220,38,38,0.3);text-underline-offset:4px}
+.pl{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.pi{display:flex;align-items:flex-start;gap:14px;background:var(--white);border-radius:var(--radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.pi-i{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#F0FDFA;display:flex;align-items:center;justify-content:center;font-size:16px}
+.pi-t{font-size:15px;color:var(--g600);line-height:1.6}
+.pi-t strong{color:var(--g800);font-weight:700}
+
+/* SECTION LABEL */
+.sl{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.sl::before,.sl::after{content:'';width:24px;height:1px;background:var(--teal)}
+
+/* AUTHOR */
+.auth{padding:48px 32px;background:var(--white)}
+.at{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;text-align:center;color:var(--navy);margin-bottom:32px}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:640px;margin:0 auto 28px}
+@media(max-width:600px){.cg{grid-template-columns:1fr}}
+.cc{background:var(--g50);border-radius:var(--radius);padding:24px 16px;text-align:center;border:1px solid var(--g200)}
+.ce{font-size:32px;margin-bottom:10px}
+.cl{font-size:11px;font-weight:700;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.cv{font-size:15px;font-weight:700;color:var(--navy);line-height:1.4}
+.cs{font-size:12px;color:var(--g400);margin-top:4px}
+
+/* TOC */
+.toc{padding:48px 32px;background:var(--g50)}
+.toc-t{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;text-align:center;color:var(--navy);margin-bottom:32px}
+.tp{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.tp-item{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid var(--g200)}
+.tp-h{display:flex;align-items:center;gap:14px;padding:18px 20px}
+.tp-n{flex-shrink:0;width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--teal-dark),var(--teal));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--teal-light)}
+.tp-info{flex:1}
+.tp-name{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.tp-desc{font-size:13px;color:var(--g400)}
+.tp-ch{padding:0 20px 18px 74px;display:flex;flex-direction:column;gap:6px}
+.tp-c{font-size:14px;color:var(--g600);display:flex;align-items:center;gap:8px}
+.tp-c::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.tp-bonus{max-width:640px;margin:20px auto 0;background:linear-gradient(135deg,#F0FDFA,#CCFBF1);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:14px;border:1px solid var(--teal)}
+.tp-bonus-i{font-size:28px;flex-shrink:0}
+.tp-bonus-t{font-size:15px;font-weight:700;color:var(--teal-dark)}
+.tp-bonus-s{font-size:13px;color:var(--teal);font-weight:400;margin-top:2px}
+
+/* WHY THIS BOOK (학부모 특화) */
+.why{padding:48px 32px;background:var(--white)}
+.why-t{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:700;text-align:center;color:var(--navy);margin-bottom:32px}
+.why-grid{max-width:640px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.why-grid{grid-template-columns:1fr}}
+.why-card{background:linear-gradient(135deg,#F0FDFA,#CCFBF1);border:1px solid #5EEAD4;border-radius:var(--radius);padding:24px 20px;text-align:center}
+.why-icon{font-size:32px;margin-bottom:10px}
+.why-name{font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:6px}
+.why-desc{font-size:13px;color:var(--g600);line-height:1.6}
+
+/* PRICING */
+.price{padding:48px 32px;background:var(--g50)}
+.price-t{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;text-align:center;color:var(--navy);margin-bottom:32px}
+.price-c{max-width:640px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.price-c{grid-template-columns:1fr}}
+.pc{border-radius:var(--radius);padding:28px 24px;text-align:center;position:relative;transition:transform .2s}
+.pc:hover{transform:translateY(-3px)}
+.pc-s{background:var(--g50);border:1px solid var(--g200)}
+.pc-b{background:linear-gradient(135deg,var(--teal-dark),var(--teal));border:2px solid #5EEAD4;color:var(--white)}
+.pc-best{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#FBBF24;color:#92400E;font-size:11px;font-weight:900;padding:4px 16px;border-radius:100px;white-space:nowrap;letter-spacing:1px}
+.pc-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.pc-s .pc-name{color:var(--navy)}
+.pc-desc{font-size:13px;margin-bottom:16px}
+.pc-s .pc-desc{color:var(--g400)}
+.pc-b .pc-desc{color:rgba(255,255,255,0.6)}
+.pc-orig{font-size:14px;text-decoration:line-through;margin-bottom:4px}
+.pc-s .pc-orig{color:var(--g400)}
+.pc-b .pc-orig{color:rgba(255,255,255,0.5)}
+.pc-price{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:900;margin-bottom:4px}
+.pc-s .pc-price{color:var(--navy)}
+.pc-b .pc-price{color:#FDE68A}
+.pc-save{font-size:13px;font-weight:700;margin-bottom:16px}
+.pc-s .pc-save{color:var(--green)}
+.pc-b .pc-save{color:#5EEAD4}
+.pc-inc{text-align:left;font-size:13px;margin-bottom:20px}
+.pc-s .pc-inc{color:var(--g600)}
+.pc-b .pc-inc{color:rgba(255,255,255,0.8)}
+.pc-ii{padding:4px 0;display:flex;align-items:center;gap:6px}
+.pc-ii::before{content:'✓';font-size:12px;font-weight:700}
+.pc-s .pc-ii::before{color:var(--green)}
+.pc-b .pc-ii::before{color:#5EEAD4}
+.pc-cta{display:block;width:100%;padding:14px 24px;border-radius:8px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;border:none;transition:opacity .2s,transform .15s}
+.pc-cta:hover{opacity:.9;transform:scale(1.02)}
+.pc-s .pc-cta{background:var(--navy);color:var(--white)}
+.pc-b .pc-cta{background:#FBBF24;color:#92400E}
+
+/* FINAL CTA */
+.fcta{background:linear-gradient(160deg,var(--teal-dark),var(--teal),#14B8A6);padding:56px 32px;text-align:center;position:relative;overflow:hidden}
+.fcta h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,4vw,30px);font-weight:900;color:var(--white);margin-bottom:12px;line-height:1.4;position:relative;z-index:1}
+.fcta h2 em{font-style:normal;color:#FDE68A}
+.fcta-s{font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:28px;position:relative;z-index:1}
+.fcta-btn{display:inline-block;background:#FBBF24;color:#92400E;font-size:17px;font-weight:900;padding:16px 48px;border-radius:10px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(251,191,36,0.3);cursor:pointer;border:none;position:relative;z-index:1}
+.fcta-btn:hover{transform:translateY(-2px) scale(1.03)}
+.fcta-n{font-size:13px;color:rgba(255,255,255,0.4);margin-top:16px;position:relative;z-index:1}
+.tb{background:var(--g50);padding:20px 32px;display:flex;justify-content:center;flex-wrap:wrap;gap:24px}
+.tb-i{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--g400)}
+@media(max-width:480px){.hero,.prob,.auth,.toc,.why,.price,.fcta{padding:36px 16px}}
+</style>
+</head>
+<body>
+<div class="dw">
+
+  <section class="hero">
+    <div class="hb">학부모를 위한 교육 가이드</div>
+    <h1>AI 시대<br><em>수학 학습법</em></h1>
+    <p class="hs">서울대 박사 + 대치동 강사가 알려주는<br>학부모가 꼭 알아야 할 수학 교육의 모든 것</p>
+    <div class="ht">
+      <span>📄 PDF/EPUB</span>
+      <span>📖 80~120페이지</span>
+      <span>⚡ 즉시 다운로드</span>
+      <span>💰 ₩19,000</span>
+    </div>
+  </section>
+
+  <section class="prob">
+    <h2 class="pt">학부모라면 누구나 하는 <em>고민</em></h2>
+    <div class="pl">
+      <div class="pi"><div class="pi-i">🤔</div><p class="pi-t"><strong>학원을 보내야 하나, 과외를 해야 하나</strong> 매번 고민만 반복</p></div>
+      <div class="pi"><div class="pi-i">📊</div><p class="pi-t"><strong>초등→중등→고등</strong> 수학 로드맵이 그려지지 않는 답답함</p></div>
+      <div class="pi"><div class="pi-i">🤖</div><p class="pi-t"><strong>ChatGPT 시대에 수학이 왜 중요한지</strong> 설명하기 어려움</p></div>
+      <div class="pi"><div class="pi-i">🏫</div><p class="pi-t"><strong>영재원, 과학고, KOI</strong> 준비를 시켜야 하는지 판단이 서지 않음</p></div>
+    </div>
+  </section>
+
+  <section class="auth">
+    <div class="sl">AUTHOR</div>
+    <h2 class="at">학부모 눈높이에서 쓴 전문가 가이드</h2>
+    <div class="cg">
+      <div class="cc"><div class="ce">🎓</div><div class="cl">학력</div><div class="cv">서울대 공대<br>박사</div><div class="cs">교육 + 연구 겸비</div></div>
+      <div class="cc"><div class="ce">👨‍🏫</div><div class="cl">경력</div><div class="cv">대치동 강사<br>10년+</div><div class="cs">수천 명 학생 지도</div></div>
+      <div class="cc"><div class="ce">👨‍👩‍👧</div><div class="cl">관점</div><div class="cv">학부모 시점<br>실전 조언</div><div class="cs">이론 아닌 현실 경험</div></div>
+    </div>
+  </section>
+
+  <section class="toc">
+    <div class="sl">CONTENTS</div>
+    <h2 class="toc-t">이 책에 담긴 내용</h2>
+    <div class="tp">
+      <div class="tp-item"><div class="tp-h"><div class="tp-n">P1</div><div class="tp-info"><div class="tp-name">왜 수학이 여전히 중요한가</div><div class="tp-desc">AI 시대의 수학 — 사라지는 것과 남는 것</div></div></div>
+        <div class="tp-ch"><div class="tp-c">AI가 대체할 수 없는 수학적 사고력</div><div class="tp-c">미래 직업과 수학의 관계</div></div></div>
+      <div class="tp-item"><div class="tp-h"><div class="tp-n">P2</div><div class="tp-info"><div class="tp-name">학년별 수학 로드맵</div><div class="tp-desc">초등→중등→고등→대입까지 완전 가이드</div></div></div>
+        <div class="tp-ch"><div class="tp-c">학년별 핵심 개념과 주의점</div><div class="tp-c">선행학습의 적정 범위</div><div class="tp-c">수학 부진아 탈출 전략</div></div></div>
+      <div class="tp-item"><div class="tp-h"><div class="tp-n">P3</div><div class="tp-info"><div class="tp-name">AI 도구 활용 수학 학습법</div><div class="tp-desc">ChatGPT, Wolfram 등 활용 가이드</div></div></div>
+        <div class="tp-ch"><div class="tp-c">AI 도구의 올바른 활용법</div><div class="tp-c">자기주도 학습에 AI를 결합하는 방법</div></div></div>
+      <div class="tp-item"><div class="tp-h"><div class="tp-n">P4</div><div class="tp-info"><div class="tp-name">대치동 강사의 과외/학원 선택법</div><div class="tp-desc">비용 대비 효과를 극대화하는 전략</div></div></div>
+        <div class="tp-ch"><div class="tp-c">학원 vs 과외 vs 자기주도 비교</div><div class="tp-c">좋은 수학 선생님 고르는 기준</div></div></div>
+      <div class="tp-item"><div class="tp-h"><div class="tp-n">P5</div><div class="tp-info"><div class="tp-name">영재고·KOI·수학올림피아드 준비</div><div class="tp-desc">특목고·영재교육 입문 가이드</div></div></div>
+        <div class="tp-ch"><div class="tp-c">영재원 → 영재고 진학 로드맵</div><div class="tp-c">KOI/수학올림피아드 준비 시기와 방법</div></div></div>
+    </div>
+    <div class="tp-bonus"><div class="tp-bonus-i">🎁</div><div><div class="tp-bonus-t">부록: 학년별 추천 교재 & 학습 앱 리스트</div><div class="tp-bonus-s">대치동 강사가 직접 선별한 검증된 학습 도구</div></div></div>
+  </section>
+
+  <section class="why">
+    <div class="sl">WHY THIS BOOK</div>
+    <h2 class="why-t">이 책만의 4가지 가치</h2>
+    <div class="why-grid">
+      <div class="why-card"><div class="why-icon">🗺️</div><div class="why-name">완전한 로드맵</div><div class="why-desc">초등~대입까지 전체 수학 학습 경로를 한눈에</div></div>
+      <div class="why-card"><div class="why-icon">🤖</div><div class="why-name">AI 시대 대비</div><div class="why-desc">ChatGPT·Wolfram 등 AI 도구를 학습에 활용하는 구체적 방법</div></div>
+      <div class="why-card"><div class="why-icon">💡</div><div class="why-name">현장 노하우</div><div class="why-desc">대치동 10년+ 강사가 알려주는 학원·과외 선택의 현실적 기준</div></div>
+      <div class="why-card"><div class="why-icon">🏆</div><div class="why-name">영재교육 가이드</div><div class="why-desc">KOI·영재고 준비의 적정 시기와 현실적 전략</div></div>
+    </div>
+  </section>
+
+  <section class="price">
+    <div class="sl">PRICE</div>
+    <h2 class="price-t">지금 시작하세요</h2>
+    <div class="price-c">
+      <div class="pc pc-s">
+        <div class="pc-name">단품 구매</div>
+        <div class="pc-desc">AI 시대 수학 학습법 1권</div>
+        <div class="pc-price">₩19,000</div>
+        <div class="pc-save">PDF + EPUB 즉시 다운로드</div>
+        <div class="pc-inc">
+          <div class="pc-ii">학부모 가이드 (80~120p)</div>
+          <div class="pc-ii">학년별 로드맵 + AI 활용법</div>
+          <div class="pc-ii">추천 교재·앱 리스트 부록</div>
+          <div class="pc-ii">180일간 다운로드 가능</div>
+        </div>
+        <a href="#" class="pc-cta">단품 구매하기</a>
+      </div>
+      <div class="pc pc-b">
+        <div class="pc-best">BEST VALUE</div>
+        <div class="pc-name">3권 번들 세트</div>
+        <div class="pc-desc">고등수학 + KOI + 학부모 가이드</div>
+        <div class="pc-orig">정가 ₩87,000</div>
+        <div class="pc-price">₩69,000</div>
+        <div class="pc-save">₩18,000 할인 (21% OFF)</div>
+        <div class="pc-inc">
+          <div class="pc-ii">고등수학 완전정복</div>
+          <div class="pc-ii">KOI·영재고 사고력 훈련서</div>
+          <div class="pc-ii">AI 시대 수학 학습법</div>
+          <div class="pc-ii">킬러 문항 30선 + 실전 50선</div>
+        </div>
+        <a href="#" class="pc-cta">번들 구매하기</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="fcta">
+    <h2>우리 아이 수학 교육,<br><em>올바른 방향</em>부터 잡으세요</h2>
+    <p class="fcta-s">서울대 박사 + 대치동 10년 강사의 학부모 필독서</p>
+    <a href="#" class="fcta-btn">📙 지금 구매하기</a>
+    <p class="fcta-n">결제 즉시 PDF/EPUB 다운로드 · 카드/계좌이체/간편결제</p>
+  </section>
+
+  <div class="tb">
+    <div class="tb-i">🔒 안전한 결제</div>
+    <div class="tb-i">⚡ 즉시 다운로드</div>
+    <div class="tb-i">📱 모든 기기 지원</div>
+    <div class="tb-i">🛡️ 7일 환불 보장</div>
+  </div>
+
+</div>
+</body>
+</html>

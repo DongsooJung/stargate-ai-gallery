@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 중복 구독 정리 도구</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0f0f0f; color: #f1f1f1; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        h1 { font-size: 1.5rem; margin-bottom: 6px; }
+        .subtitle { color: #aaa; font-size: 0.85rem; margin-bottom: 24px; }
+
+        .stats { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 16px 20px; flex: 1; min-width: 140px; }
+        .stat .num { font-size: 1.6rem; font-weight: 700; }
+        .stat .label { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .stat.red .num { color: #f87171; }
+        .stat.yellow .num { color: #fbbf24; }
+        .stat.green .num { color: #4ade80; }
+        .stat.blue .num { color: #60a5fa; }
+
+        .instructions { background: #1a1a2e; border: 1px solid #4338ca; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+        .instructions h2 { font-size: 1rem; color: #a78bfa; margin-bottom: 12px; }
+        .instructions ol { padding-left: 20px; font-size: 0.85rem; color: #d4d4d8; }
+        .instructions li { margin-bottom: 8px; line-height: 1.6; }
+        .instructions code { background: #2a2a3e; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+
+        .tier { margin-bottom: 32px; }
+        .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .tier-header h2 { font-size: 1.1rem; }
+        .tier-header .badge { padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+        .badge-red { background: #7f1d1d; color: #fca5a5; }
+        .badge-yellow { background: #78350f; color: #fde68a; }
+        .badge-green { background: #14532d; color: #86efac; }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #444; background: #222; color: #f1f1f1; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .btn:hover { background: #333; }
+        .btn-primary { background: #4338ca; border-color: #4338ca; }
+        .btn-primary:hover { background: #5b4fd6; }
+        .btn-danger { background: #991b1b; border-color: #991b1b; }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .channel-list { display: flex; flex-direction: column; gap: 4px; }
+        .channel { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; transition: all 0.15s; }
+        .channel:hover { background: #222; border-color: #444; }
+        .channel.done { opacity: 0.4; background: #0a1a0a; border-color: #1a3a1a; }
+        .channel.done .ch-name { text-decoration: line-through; }
+
+        .ch-check { width: 20px; height: 20px; accent-color: #4ade80; cursor: pointer; flex-shrink: 0; }
+        .ch-num { color: #666; font-size: 0.8rem; width: 30px; text-align: right; flex-shrink: 0; }
+        .ch-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+        .ch-subs { color: #888; font-size: 0.8rem; width: 80px; text-align: right; flex-shrink: 0; }
+        .ch-link { flex-shrink: 0; }
+        .ch-link a { display: inline-block; padding: 4px 12px; background: #ff0000; color: white; border-radius: 4px; text-decoration: none; font-size: 0.75rem; font-weight: 600; }
+        .ch-link a:hover { background: #cc0000; }
+
+        .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 3px; transition: width 0.3s; }
+
+        .copy-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-top: 12px; position: relative; }
+        .copy-box pre { font-size: 0.75rem; color: #aaa; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; padding: 4px 10px; background: #333; border: none; color: #f1f1f1; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .copy-btn:hover { background: #444; }
+
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; background: #1a1a1a; border-radius: 10px; padding: 4px; }
+        .tab { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: #888; transition: all 0.2s; }
+        .tab.active { background: #ff0000; color: white; }
+        .tab:hover:not(.active) { color: #f1f1f1; background: #252525; }
+
+        footer { text-align: center; padding: 30px; color: #555; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>YouTube 중복 구독 정리 도구</h1>
+    <div class="subtitle">DONGSOO + 정동수 계정 간 중복 128개 채널 | "정동수" 계정에서 구독 해제 권장</div>
+
+    <div class="stats">
+        <div class="stat red">
+            <div class="num" id="statTotal">128</div>
+            <div class="label">중복 채널</div>
+        </div>
+        <div class="stat yellow">
+            <div class="num" id="statDone">0</div>
+            <div class="label">처리 완료</div>
+        </div>
+        <div class="stat green">
+            <div class="num" id="statRemain">128</div>
+            <div class="label">남은 작업</div>
+        </div>
+        <div class="stat blue">
+            <div class="num" id="statPct">0%</div>
+            <div class="label">진행률</div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h2>사용법</h2>
+        <ol>
+            <li>YouTube에 <strong>"정동수"</strong> 계정으로 로그인합니다</li>
+            <li>아래 채널의 <strong>[구독해제]</strong> 버튼을 클릭하면 해당 채널 페이지가 새 탭으로 열립니다</li>
+            <li>채널 페이지에서 <strong>"구독중"</strong> 버튼 클릭 → <strong>"구독 취소"</strong> 확인</li>
+            <li>완료 후 체크박스를 클릭하면 진행률이 업데이트됩니다 (상태가 브라우저에 저장됩니다)</li>
+        </ol>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab active" onclick="switchTier('tier1', this)">
+            Tier 1 · 즉시 해제 (<span id="t1count">23</span>)
+        </div>
+        <div class="tab" onclick="switchTier('tier2', this)">
+            Tier 2 · 검토 후 (<span id="t2count">34</span>)
+        </div>
+        <div class="tab" onclick="switchTier('tier3', this)">
+            Tier 3 · 한 계정만 (<span id="t3count">71</span>)
+        </div>
+    </div>
+
+    <div id="tierContent">
+        <!-- 동적 렌더링 -->
+    </div>
+
+    <div style="margin-top:24px">
+        <h3 style="font-size:0.95rem; margin-bottom:12px; color:#aaa">전체 URL 목록 (복사용)</h3>
+        <div class="copy-box">
+            <button class="copy-btn" onclick="copyAllUrls()">전체 복사</button>
+            <pre id="allUrlsPre"></pre>
+        </div>
+    </div>
+
+    <footer>
+        생성: 2026-03-22 | 데이터 기준: youtube_subscriptions_combined.csv<br>
+        체크 상태는 브라우저 localStorage에 자동 저장됩니다
+    </footer>
+</div>
+
+<script>
+const TIERS = {"tier1":[{"name":"서울대예수전도단","subs":"9","subsNum":9,"url":"https://www.youtube.com/@%EC%84%9C%EC%9A%B8%EB%8C%80%EC%98%88%EC%88%98%EC%A0%84%EB%8F%84%EB%8B%A8","handle":"@서울대예수전도단"},{"name":"권영상의 시티랩","subs":"182","subsNum":182,"url":"https://www.youtube.com/@%EA%B6%8C%EC%98%81%EC%83%81%EC%9D%98%EC%8B%9C%ED%8B%B0%EB%9E%A9","handle":"@권영상의시티랩"},{"name":"다원교육영재관","subs":"190","subsNum":190,"url":"https://www.youtube.com/@%EB%8B%A4%EC%9B%90%EA%B5%90%EC%9C%A1%EC%98%81%EC%9E%AC%EA%B4%80","handle":"@다원교육영재관"},{"name":"서울대 기독인 연합 SNU CU","subs":"474","subsNum":474,"url":"https://www.youtube.com/@snuchristianunion8036","handle":"@snuchristianunion8036"},{"name":"다애교회 AllLoveChurch","subs":"944","subsNum":944,"url":"https://www.youtube.com/@alllovechurch","handle":"@alllovechurch"},{"name":"다원영재관","subs":"1.3천","subsNum":1320,"url":"https://www.youtube.com/@%EB%8B%A4%EC%9B%90%EC%98%81%EC%9E%AC%EA%B4%80","handle":"@다원영재관"},{"name":"아카로드","subs":"1.4천","subsNum":1350,"url":"https://www.youtube.com/@acaroad","handle":"@acaroad"},{"name":"서울대학교기독교수협의회","subs":"1.6천","subsNum":1550,"url":"https://www.youtube.com/@%EC%84%9C%EC%9A%B8%EB%8C%80%ED%95%99%EA%B5%90%EA%B8%B0%EB%8F%85%EA%B5%90%EC%88%98%ED%98%91","handle":"@서울대학교기독교수협"},{"name":"고려대 CCC","subs":"1.6천","subsNum":1600,"url":"https://www.youtube.com/@koreaunivccc","handle":"@koreaunivccc"},{"name":"예수전도단 캠퍼스워십","subs":"1.7천","subsNum":1710,"url":"https://www.youtube.com/@campus_worship","handle":"@campus_worship"},{"name":"한국행정연구원(KIPA)","subs":"2.3천","subsNum":2310,"url":"https://www.youtube.com/@kipasince1991","handle":"@kipasince1991"},{"name":"우리들교회청년국","subs":"2.4천","subsNum":2410,"url":"https://www.youtube.com/@wooridle_brandnew","handle":"@wooridle_brandnew"},{"name":"(기업의) 해결사 조팀장","subs":"2.4천","subsNum":2440,"url":"https://www.youtube.com/@regnum574","handle":"@regnum574"},{"name":"LET'S GO KOREA","subs":"2.8천","subsNum":2820,"url":"https://www.youtube.com/@letsgokorea_official","handle":"@letsgokorea_official"},{"name":"PNG WORLD","subs":"3.5천","subsNum":3520,"url":"https://www.youtube.com/@PNG_WORLD","handle":"@PNG_WORLD"},{"name":"전철곤목사 오직 은혜로","subs":"4.0천","subsNum":3950,"url":"https://www.youtube.com/@gracejeon","handle":"@gracejeon"},{"name":"엄마인강","subs":"4.7천","subsNum":4700,"url":"https://www.youtube.com/@mommycampus","handle":"@mommycampus"},{"name":"다원교육TV","subs":"5.7천","subsNum":5670,"url":"https://www.youtube.com/@TV-hu8cx","handle":"@TV-hu8cx"},{"name":"온누리교회 SNS 청년부","subs":"6.7천","subsNum":6720,"url":"https://www.youtube.com/@SNSOnnuri","handle":"@SNSOnnuri"},{"name":"PLI 스터디클럽","subs":"6.9천","subsNum":6880,"url":"https://www.youtube.com/@plijoaa","handle":"@plijoaa"},{"name":"REMNANT CREATIVE","subs":"7.2천","subsNum":7180,"url":"https://www.youtube.com/@remnantcreative","handle":"@remnantcreative"},{"name":"학원강사TV","subs":"8.1천","subsNum":8070,"url":"https://www.youtube.com/@%ED%95%99%EC%9B%90%EA%B0%95%EC%82%ACTV","handle":"@학원강사TV"},{"name":"예수전도단 CMK","subs":"9.9천","subsNum":9870,"url":"https://www.youtube.com/@YWAM_CMK","handle":"@YWAM_CMK"}],"tier2":[{"name":"YWAM Kona","subs":"1.1만","subsNum":11200,"url":"https://www.youtube.com/@ywamkonaofficial","handle":"@ywamkonaofficial"},{"name":"시대인재 SDIJ","subs":"1.2만","subsNum":11700,"url":"https://www.youtube.com/@%EC%8B%9C%EB%8C%80%EC%9D%B8%EC%9E%ACSDIJ","handle":"@시대인재SDIJ"},{"name":"브레인 트리니티","subs":"1.2만","subsNum":12000,"url":"https://www.youtube.com/@the.brain.trinity","handle":"@the.brain.trinity"},{"name":"서울대학교AI연구원","subs":"1.2만","subsNum":12100,"url":"https://www.youtube.com/@AI-xi1ci","handle":"@AI-xi1ci"},{"name":"하늘숲교회","subs":"1.3만","subsNum":12900,"url":"https://www.youtube.com/@skyforest_church","handle":"@skyforest_church"},{"name":"대모산 개발단","subs":"1.5만","subsNum":15000,"url":"https://www.youtube.com/@%EB%8C%80%EB%AA%A8%EC%82%B0%EA%B0%9C%EB%B0%9C%EB%8B%A8","handle":"@대모산개발단"},{"name":"YWAM Kona Music","subs":"1.5만","subsNum":15100,"url":"https://www.youtube.com/@ywamkonamusic","handle":"@ywamkonamusic"},{"name":"NCMN 공식 유튜브","subs":"1.8만","subsNum":18300,"url":"https://www.youtube.com/@ncmnmedia","handle":"@ncmnmedia"},{"name":"제우스남성의원 이석영","subs":"1.9만","subsNum":18700,"url":"https://www.youtube.com/@zeusclinic","handle":"@zeusclinic"},{"name":"최성호의 6하원칙","subs":"1.9만","subsNum":19000,"url":"https://www.youtube.com/@chsh","handle":"@chsh"},{"name":"NewMoravianOPR","subs":"2.2만","subsNum":22200,"url":"https://www.youtube.com/@NewMoravianOPR_PC","handle":"@NewMoravianOPR_PC"},{"name":"소희감성SHGS","subs":"2.3만","subsNum":23000,"url":"https://www.youtube.com/@shgs","handle":"@shgs"},{"name":"인사처TV","subs":"2.7만","subsNum":26700,"url":"https://www.youtube.com/@mpmkorea","handle":"@mpmkorea"},{"name":"딩코딩코","subs":"2.7만","subsNum":26900,"url":"https://www.youtube.com/@%EB%94%A9%EC%BD%94%EB%94%A9%EC%BD%94","handle":"@딩코딩코"},{"name":"온누리교회 대학청년","subs":"3.0만","subsNum":30200,"url":"https://www.youtube.com/@onnuri_young_adult","handle":"@onnuri_young_adult"},{"name":"새로운교회","subs":"3.0만","subsNum":30299,"url":"https://www.youtube.com/@Saeroun-Church","handle":"@Saeroun-Church"},{"name":"볼수록 부자되는 채널","subs":"3.2만","subsNum":31600,"url":"https://www.youtube.com/@watchandrich","handle":"@watchandrich"},{"name":"아루인사이트","subs":"3.4만","subsNum":33500,"url":"https://www.youtube.com/@aroo_insight","handle":"@aroo_insight"},{"name":"논준모연구소","subs":"3.5만","subsNum":34500,"url":"https://www.youtube.com/@nonjunmo","handle":"@nonjunmo"},{"name":"1516교회","subs":"3.7만","subsNum":36700,"url":"https://www.youtube.com/@1516church","handle":"@1516church"},{"name":"AI 알려주는 남자, 데브남","subs":"3.8만","subsNum":38000,"url":"https://www.youtube.com/@AI%EC%95%8C%EB%A0%A4%EC%A3%BC%EB%8A%94%EB%82%A8%EC%9E%90-%EB%8D%B0%EB%B8%8C%EB%82%A8","handle":"@AI알려주는남자-데브남"},{"name":"POD CHURCH","subs":"4.9만","subsNum":49100,"url":"https://www.youtube.com/@podchurchparadeofdavid","handle":"@podchurchparadeofdavid"},{"name":"엠마쌤","subs":"5.0만","subsNum":50000,"url":"https://www.youtube.com/@emmassam","handle":"@emmassam"},{"name":"패스트캠퍼스","subs":"5.0만","subsNum":50199,"url":"https://www.youtube.com/@FASTCAMPUStv","handle":"@FASTCAMPUStv"},{"name":"인생치트키 민님","subs":"5.3만","subsNum":53400,"url":"https://www.youtube.com/@%EC%9D%B8%EC%83%9D%EC%B9%98%ED%8A%B8%ED%82%A4%EB%AF%BC%EB%8B%98","handle":"@인생치트키민님"},{"name":"따뜻한수프","subs":"5.3만","subsNum":53400,"url":"https://www.youtube.com/@soupmedia","handle":"@soupmedia"},{"name":"Stonegate Music","subs":"5.6만","subsNum":55599,"url":"https://www.youtube.com/@stonegatemusic1223","handle":"@stonegatemusic1223"},{"name":"윤자동","subs":"6.0만","subsNum":59600,"url":"https://www.youtube.com/@yunjadong","handle":"@yunjadong"},{"name":"THE CROSS CHURCH","subs":"6.9만","subsNum":68800,"url":"https://www.youtube.com/@tcc5670","handle":"@tcc5670"},{"name":"범인의 흔적","subs":"6.9만","subsNum":69300,"url":"https://www.youtube.com/@redgasstation","handle":"@redgasstation"},{"name":"CGN 하용조","subs":"7.0만","subsNum":69900,"url":"https://www.youtube.com/@hayongjo","handle":"@hayongjo"},{"name":"우리들교회","subs":"8.4만","subsNum":84400,"url":"https://www.youtube.com/@wooridlechurch","handle":"@wooridlechurch"},{"name":"솔직한 언니 K","subs":"8.8만","subsNum":87500,"url":"https://www.youtube.com/@outspokensister","handle":"@outspokensister"},{"name":"예수전도단 화요모임","subs":"9.1만","subsNum":90500,"url":"https://www.youtube.com/@ywamworshipkorea","handle":"@ywamworshipkorea"}],"tier3":[{"name":"tvN D ENT","subs":"532만","subsNum":5320000,"url":"https://www.youtube.com/@tvNDENT","handle":"@tvNDENT"},{"name":"YTN","subs":"529만","subsNum":5290000,"url":"https://www.youtube.com/@ytnnews24","handle":"@ytnnews24"},{"name":"슈카월드","subs":"367만","subsNum":3670000,"url":"https://www.youtube.com/@syukaworld","handle":"@syukaworld"},{"name":"지식인사이드","subs":"362만","subsNum":3620000,"url":"https://www.youtube.com/@%EC%A7%80%EC%8B%9D%EC%9D%B8%EC%82%AC%EC%9D%B4%EB%93%9C","handle":"@지식인사이드"},{"name":"삼프로TV","subs":"289만","subsNum":2890000,"url":"https://www.youtube.com/@3protv","handle":"@3protv"},{"name":"ITSub잇섭","subs":"281만","subsNum":2810000,"url":"https://www.youtube.com/@ITSUB","handle":"@ITSUB"},{"name":"신사임당","subs":"269만","subsNum":2690000,"url":"https://www.youtube.com/@CH%EC%8B%A0%EC%82%AC%EC%9E%84%EB%8B%B9","handle":"@CH신사임당"},{"name":"세바시","subs":"218만","subsNum":2180000,"url":"https://www.youtube.com/@sebasi15","handle":"@sebasi15"},{"name":"월급쟁이부자들TV","subs":"210만","subsNum":2100000,"url":"https://www.youtube.com/@weolbu_official","handle":"@weolbu_official"},{"name":"머니인사이드","subs":"197만","subsNum":1970000,"url":"https://www.youtube.com/@moneyinside7","handle":"@moneyinside7"},{"name":"미미미누","subs":"192만","subsNum":1920000,"url":"https://www.youtube.com/@mimiminu_official","handle":"@mimiminu_official"},{"name":"MKTV 김미경TV","subs":"189만","subsNum":1890000,"url":"https://www.youtube.com/@MKTV","handle":"@MKTV"},{"name":"내셔널지오그래픽","subs":"187만","subsNum":1870000,"url":"https://www.youtube.com/@natgeokorea","handle":"@natgeokorea"},{"name":"리뷰엉이","subs":"181만","subsNum":1810000,"url":"https://www.youtube.com/@%EB%A6%AC%EB%B7%B0%EC%97%89%EC%9D%B4","handle":"@리뷰엉이"},{"name":"달란트투자","subs":"154만","subsNum":1540000,"url":"https://www.youtube.com/@talentinvestment","handle":"@talentinvestment"},{"name":"셜록현준","subs":"144만","subsNum":1440000,"url":"https://www.youtube.com/@Sherlock_HJ","handle":"@Sherlock_HJ"},{"name":"김지윤의 지식Play","subs":"137만","subsNum":1370000,"url":"https://www.youtube.com/@Kjy_Play","handle":"@Kjy_Play"},{"name":"Desiring God","subs":"110만","subsNum":1100000,"url":"https://www.youtube.com/@desiringGod","handle":"@desiringGod"},{"name":"자취남","subs":"98.4만","subsNum":984000,"url":"https://www.youtube.com/@jachinam","handle":"@jachinam"},{"name":"새롭게하소서CBS","subs":"95.9만","subsNum":959000,"url":"https://www.youtube.com/@cbsrenew","handle":"@cbsrenew"},{"name":"하와이 대저택","subs":"95.5만","subsNum":955000,"url":"https://www.youtube.com/@hawaiidjt","handle":"@hawaiidjt"},{"name":"노마드션","subs":"79.5만","subsNum":795000,"url":"https://www.youtube.com/@NomadShaun","handle":"@NomadShaun"},{"name":"KBS 추적60분","subs":"78.1만","subsNum":781000,"url":"https://www.youtube.com/@KBS60min","handle":"@KBS60min"},{"name":"EO Korea","subs":"74.4만","subsNum":744000,"url":"https://www.youtube.com/@eo_korea","handle":"@eo_korea"},{"name":"공병호TV","subs":"73.4만","subsNum":734000,"url":"https://www.youtube.com/@GongByeongHoTV","handle":"@GongByeongHoTV"},{"name":"잘잘법","subs":"73.1만","subsNum":731000,"url":"https://www.youtube.com/@jaljalroad","handle":"@jaljalroad"},{"name":"조코딩","subs":"72.4만","subsNum":724000,"url":"https://www.youtube.com/@jocoding","handle":"@jocoding"},{"name":"이지영","subs":"71.5만","subsNum":715000,"url":"https://www.youtube.com/@leejiyoung_official","handle":"@leejiyoung_official"},{"name":"국민의힘TV","subs":"51.8만","subsNum":518000,"url":"https://www.youtube.com/@peoplepowerparty_Official","handle":"@peoplepowerparty_Official"},{"name":"노마드 코더","subs":"50.1만","subsNum":501000,"url":"https://www.youtube.com/@nomadcoders","handle":"@nomadcoders"},{"name":"MARKERS WORSHIP","subs":"49.5만","subsNum":495000,"url":"https://www.youtube.com/@MarkersWorship","handle":"@MarkersWorship"},{"name":"다니엘기도회","subs":"49.1만","subsNum":491000,"url":"https://www.youtube.com/@danielprayer","handle":"@danielprayer"},{"name":"유니브클래스","subs":"46.4만","subsNum":464000,"url":"https://www.youtube.com/@%EC%9C%A0%EB%8B%88%EB%B8%8C%ED%81%B4%EB%9E%98%EC%8A%A4","handle":"@유니브클래스"},{"name":"LEVISTANCE","subs":"45.9만","subsNum":459000,"url":"https://www.youtube.com/@LEVISTANCE_official","handle":"@LEVISTANCE_official"},{"name":"안될공학","subs":"42.3만","subsNum":423000,"url":"https://www.youtube.com/@unrealtech","handle":"@unrealtech"},{"name":"나도코딩","subs":"40.2만","subsNum":402000,"url":"https://www.youtube.com/@nadocoding","handle":"@nadocoding"},{"name":"진약사톡","subs":"39.2만","subsNum":392000,"url":"https://www.youtube.com/@jinpharmacisttalk","handle":"@jinpharmacisttalk"},{"name":"홍춘욱의 경제강의노트","subs":"38.2만","subsNum":382000,"url":"https://www.youtube.com/@chunukhong","handle":"@chunukhong"},{"name":"분당우리교회","subs":"38만","subsNum":380000,"url":"https://www.youtube.com/@BundangWooriChurch","handle":"@BundangWooriChurch"},{"name":"Agapao Worship","subs":"37.3만","subsNum":373000,"url":"https://www.youtube.com/@AgapaoWorship","handle":"@AgapaoWorship"},{"name":"IHOP","subs":"37.3만","subsNum":373000,"url":"https://www.youtube.com/@IHOPkc","handle":"@IHOPkc"},{"name":"장사건물주 강호동","subs":"35.2만","subsNum":352000,"url":"https://www.youtube.com/@%EA%B1%B4%EB%AC%BC%EC%A3%BC%EA%B0%95%ED%98%B8%EB%8F%99tv","handle":"@건물주강호동tv"},{"name":"현승원TV","subs":"34.8만","subsNum":348000,"url":"https://www.youtube.com/@%ED%98%84%EC%8A%B9%EC%9B%90TV","handle":"@현승원TV"},{"name":"F.I.A","subs":"34.7만","subsNum":347000,"url":"https://www.youtube.com/@FIAWORSHIP","handle":"@FIAWORSHIP"},{"name":"김동호 목사","subs":"34.3만","subsNum":343000,"url":"https://www.youtube.com/@everyamazingmorning","handle":"@everyamazingmorning"},{"name":"WELOVE","subs":"33.8만","subsNum":338000,"url":"https://www.youtube.com/@WELOVECREATIVETEAM","handle":"@WELOVECREATIVETEAM"},{"name":"아정당","subs":"33.8만","subsNum":338000,"url":"https://www.youtube.com/@%EC%95%84%EC%A0%95%EB%8B%B9","handle":"@아정당"},{"name":"방구석 리뷰룸","subs":"31.7만","subsNum":317000,"url":"https://www.youtube.com/@bgsreview","handle":"@bgsreview"},{"name":"크리스천투데이","subs":"30.7만","subsNum":307000,"url":"https://www.youtube.com/@christiantodaynews","handle":"@christiantodaynews"},{"name":"J-US Ministry","subs":"27.4만","subsNum":274000,"url":"https://www.youtube.com/@JUSministry","handle":"@JUSministry"},{"name":"사랑의교회","subs":"26.5만","subsNum":265000,"url":"https://www.youtube.com/@sarangchurch121","handle":"@sarangchurch121"},{"name":"책읽는사자","subs":"26.2만","subsNum":262000,"url":"https://www.youtube.com/@lion.ryanyun","handle":"@lion.ryanyun"},{"name":"HOLY TUBE","subs":"25.7만","subsNum":257000,"url":"https://www.youtube.com/@HolyTube0","handle":"@HolyTube0"},{"name":"스튜디오 샤","subs":"22.2만","subsNum":222000,"url":"https://www.youtube.com/@snu_studiosha","handle":"@snu_studiosha"},{"name":"마픽스","subs":"20.6만","subsNum":206000,"url":"https://www.youtube.com/@%EB%A7%88%ED%94%BD%EC%8A%A4","handle":"@마픽스"},{"name":"제자광성교회","subs":"20.2만","subsNum":202000,"url":"https://www.youtube.com/@jejaks_official","handle":"@jejaks_official"},{"name":"Isaiah6tyOne","subs":"19.9만","subsNum":199000,"url":"https://www.youtube.com/@i6tyone","handle":"@i6tyone"},{"name":"지남쌤 스타일","subs":"19.4만","subsNum":194000,"url":"https://www.youtube.com/@%EC%A7%80%EB%82%A8%EC%8C%A4%EC%8A%A4%ED%83%80%EC%9D%BC","handle":"@지남쌤스타일"},{"name":"한성교회","subs":"17.3만","subsNum":173000,"url":"https://www.youtube.com/@happypeople7094","handle":"@happypeople7094"},{"name":"이상한마케팅","subs":"17만","subsNum":170000,"url":"https://www.youtube.com/@isanghan_marketing","handle":"@isanghan_marketing"},{"name":"손기철장로","subs":"15.8만","subsNum":158000,"url":"https://www.youtube.com/@HTM0691","handle":"@HTM0691"},{"name":"이정훈교수","subs":"15.7만","subsNum":157000,"url":"https://www.youtube.com/@Ljh_Prof.Rev.","handle":"@Ljh_Prof.Rev."},{"name":"롬팔이팔","subs":"14.8만","subsNum":148000,"url":"https://www.youtube.com/@GOD_people","handle":"@GOD_people"},{"name":"사장찍어주는남자","subs":"14.4만","subsNum":144000,"url":"https://www.youtube.com/@sajjiknam_","handle":"@sajjiknam_"},{"name":"세계로교회","subs":"13.6만","subsNum":136000,"url":"https://www.youtube.com/@SegeroChurch","handle":"@SegeroChurch"},{"name":"온누리교회","subs":"13.4만","subsNum":134000,"url":"https://www.youtube.com/@Onnuriservice","handle":"@Onnuriservice"},{"name":"아우라M","subs":"12.5만","subsNum":125000,"url":"https://www.youtube.com/@aura_m","handle":"@aura_m"},{"name":"코딩알려주는누나","subs":"12.3만","subsNum":123000,"url":"https://www.youtube.com/@%EC%BD%94%EB%94%A9%EC%95%8C%EB%A0%A4%EC%A3%BC%EB%8A%94%EB%88%84%EB%82%98","handle":"@코딩알려주는누나"},{"name":"오륜교회","subs":"12.1만","subsNum":121000,"url":"https://www.youtube.com/@oryunchurch","handle":"@oryunchurch"},{"name":"대성마이맥","subs":"10.7만","subsNum":107000,"url":"https://www.youtube.com/@mimac_study","handle":"@mimac_study"},{"name":"지남쌤성경공부","subs":"10.6만","subsNum":106000,"url":"https://www.youtube.com/@%EC%A7%80%EB%82%A8%EC%8C%A4%EC%84%B1%EA%B2%BD%EA%B3%B5%EB%B6%80","handle":"@지남쌤성경공부"}]};
+
+let currentTier = 'tier1';
+
+// State management
+function getState() {
+    try {
+        return JSON.parse(localStorage.getItem('yt_unsub_state') || '{}');
+    } catch(e) { return {}; }
+}
+function setState(key, val) {
+    const s = getState();
+    s[key] = val;
+    localStorage.setItem('yt_unsub_state', JSON.stringify(s));
+}
+
+function renderTier(tier) {
+    const channels = TIERS[tier];
+    const state = getState();
+    const html = `
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openNext5()">다음 5개 열기</button>
+            <button class="btn" onclick="checkAll()">전체 체크</button>
+            <button class="btn" onclick="uncheckAll()">전체 해제</button>
+        </div>
+        <div class="channel-list">
+            ${channels.map((ch, i) => {
+                const key = tier + '_' + i;
+                const done = state[key] ? 'done' : '';
+                return `
+                <div class="channel ${done}" id="ch_${key}">
+                    <input type="checkbox" class="ch-check" ${state[key]?'checked':''} onchange="toggleCh('${key}', this)">
+                    <span class="ch-num">${i+1}</span>
+                    <span class="ch-name">${ch.name}</span>
+                    <span class="ch-subs">${ch.subs}명</span>
+                    <span class="ch-link">
+                        <a href="${ch.url}" target="_blank" rel="noopener">구독해제 →</a>
+                    </span>
+                </div>`;
+            }).join('')}
+        </div>
+    `;
+    document.getElementById('tierContent').innerHTML = html;
+    updateProgress();
+}
+
+function toggleCh(key, el) {
+    setState(key, el.checked);
+    const div = document.getElementById('ch_' + key);
+    div.classList.toggle('done', el.checked);
+    updateProgress();
+}
+
+function updateProgress() {
+    const state = getState();
+    const allKeys = [];
+    for (const tier of ['tier1','tier2','tier3']) {
+        TIERS[tier].forEach((_, i) => allKeys.push(tier + '_' + i));
+    }
+    const done = allKeys.filter(k => state[k]).length;
+    const total = allKeys.length;
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statRemain').textContent = total - done;
+    document.getElementById('statPct').textContent = pct + '%';
+
+    const fill = document.getElementById('progressFill');
+    if (fill) {
+        const tierKeys = TIERS[currentTier].map((_, i) => currentTier + '_' + i);
+        const tierDone = tierKeys.filter(k => state[k]).length;
+        fill.style.width = (tierDone/tierKeys.length*100) + '%';
+    }
+
+    // Update tab counts
+    for (const t of ['tier1','tier2','tier3']) {
+        const tKeys = TIERS[t].map((_, i) => t + '_' + i);
+        const tDone = tKeys.filter(k => state[k]).length;
+        const remaining = TIERS[t].length - tDone;
+        const el = document.getElementById(t.replace('tier','t') + 'count');
+        if (el) el.textContent = remaining > 0 ? remaining : '✓';
+    }
+}
+
+function switchTier(tier, el) {
+    currentTier = tier;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderTier(tier);
+}
+
+function openNext5() {
+    const state = getState();
+    const channels = TIERS[currentTier];
+    let opened = 0;
+    for (let i = 0; i < channels.length && opened < 5; i++) {
+        const key = currentTier + '_' + i;
+        if (!state[key]) {
+            window.open(channels[i].url, '_blank');
+            opened++;
+        }
+    }
+}
+
+function checkAll() {
+    const channels = TIERS[currentTier];
+    channels.forEach((_, i) => {
+        const key = currentTier + '_' + i;
+        setState(key, true);
+    });
+    renderTier(currentTier);
+}
+
+function uncheckAll() {
+    const channels = TIERS[currentTier];
+    channels.forEach((_, i) => {
+        const key = currentTier + '_' + i;
+        setState(key, false);
+    });
+    renderTier(currentTier);
+}
+
+function copyAllUrls() {
+    const allUrls = [];
+    for (const tier of ['tier1','tier2','tier3']) {
+        TIERS[tier].forEach(ch => allUrls.push(ch.url));
+    }
+    navigator.clipboard.writeText(allUrls.join('\n')).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = '복사됨!';
+        setTimeout(() => btn.textContent = '전체 복사', 2000);
+    });
+}
+
+// Init
+const allUrls = [];
+for (const tier of ['tier1','tier2','tier3']) {
+    TIERS[tier].forEach(ch => allUrls.push(ch.url));
+}
+document.getElementById('allUrlsPre').textContent = allUrls.join('\n');
+
+renderTier('tier1');
+updateProgress();
+</script>
+</body>
+</html>

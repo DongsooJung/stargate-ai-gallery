@@ -1,0 +1,4 @@
+# 커스텀 도메인 사용 시: 이 파일을 'CNAME' (확장자 없음)으로 복사하고
+# 아래 도메인 한 줄만 남기고 주석 모두 삭제 후 git add CNAME
+# gallery.stargate11.com
+# 또는 ai.stargate11.com / archive.stargate11.com

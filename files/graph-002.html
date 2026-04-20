@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스타게이트 프로젝트 - Knowledge Graph</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+#canvas { width: 100vw; height: 100vh; display: block; }
+#info-panel {
+  position: fixed; top: 16px; left: 16px;
+  background: rgba(26,26,46,0.95); border: 1px solid #444;
+  border-radius: 12px; padding: 20px; max-width: 320px;
+  backdrop-filter: blur(10px); z-index: 10;
+}
+#info-panel h2 { color: #8b5cf6; font-size: 16px; margin-bottom: 8px; }
+#info-panel p { font-size: 12px; color: #888; line-height: 1.5; }
+#legend {
+  position: fixed; bottom: 16px; left: 16px;
+  background: rgba(26,26,46,0.95); border: 1px solid #444;
+  border-radius: 12px; padding: 16px; z-index: 10;
+}
+#legend h3 { font-size: 13px; margin-bottom: 8px; color: #aaa; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+#node-detail {
+  position: fixed; top: 16px; right: 16px;
+  background: rgba(26,26,46,0.95); border: 1px solid #8b5cf6;
+  border-radius: 12px; padding: 20px; max-width: 300px;
+  display: none; z-index: 10;
+}
+#node-detail h3 { color: #8b5cf6; font-size: 15px; margin-bottom: 6px; }
+#node-detail .domain { font-size: 11px; color: #888; margin-bottom: 10px; }
+#node-detail .links-title { font-size: 12px; color: #aaa; margin-top: 8px; margin-bottom: 4px; }
+#node-detail .link-item { font-size: 11px; color: #60a5fa; cursor: pointer; margin: 2px 0; }
+#node-detail .link-item:hover { text-decoration: underline; }
+#stats {
+  position: fixed; bottom: 16px; right: 16px;
+  background: rgba(26,26,46,0.95); border: 1px solid #444;
+  border-radius: 12px; padding: 12px 16px; z-index: 10; font-size: 11px; color: #888;
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="info-panel">
+  <h2>🌌 스타게이트 Knowledge Graph</h2>
+  <p>옵시디언 스타일 지식 연결 맵<br>
+  노드를 클릭하면 연결 정보를 확인할 수 있습니다.<br>
+  드래그로 이동, 스크롤로 줌</p>
+</div>
+
+<div id="legend">
+  <h3>도메인</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> 🏢 비즈니스</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> 🎓 학술/커리어</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> 🧑 개인/라이프</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> 📦 아카이브</div>
+  <div class="legend-item" style="margin-top:8px"><div class="legend-dot" style="background:#fff;width:16px;height:16px"></div> 허브(도메인)</div>
+</div>
+
+<div id="node-detail">
+  <h3 id="detail-title"></h3>
+  <div class="domain" id="detail-domain"></div>
+  <div class="links-title">🔗 연결된 페이지:</div>
+  <div id="detail-links"></div>
+</div>
+
+<div id="stats"></div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const DOMAIN_COLORS = {
+  '비즈니스': '#f59e0b',
+  '학술/커리어': '#3b82f6',
+  '개인/라이프': '#10b981',
+  '아카이브': '#8b5cf6'
+};
+
+// Nodes
+const nodes = [
+  // Hubs (domains)
+  { id: 'biz', label: '🏢 비즈니스', domain: '비즈니스', hub: true },
+  { id: 'acad', label: '🎓 학술/커리어', domain: '학술/커리어', hub: true },
+  { id: 'life', label: '🧑 개인/라이프', domain: '개인/라이프', hub: true },
+  { id: 'arch', label: '📦 아카이브', domain: '아카이브', hub: true },
+
+  // 비즈니스 subpages - clustered
+  { id: 'b1', label: '세무 & 회계', domain: '비즈니스', cluster: 'finance' },
+  { id: 'b2', label: '금융 & 결제', domain: '비즈니스', cluster: 'finance' },
+  { id: 'b3', label: '부동산 & 재정', domain: '비즈니스', cluster: 'finance' },
+  { id: 'b4', label: '사업자 등록', domain: '비즈니스', cluster: 'legal' },
+  { id: 'b5', label: '법률 & 등기', domain: '비즈니스', cluster: 'legal' },
+  { id: 'b6', label: '사업 & 법인', domain: '비즈니스', cluster: 'legal' },
+  { id: 'b7', label: '법인사업자(1~4)', domain: '비즈니스', cluster: 'entity' },
+  { id: 'b8', label: '1인 법인', domain: '비즈니스', cluster: 'entity' },
+  { id: 'b9', label: '개인사업자', domain: '비즈니스', cluster: 'entity' },
+  { id: 'b10', label: '사무실 & 인프라', domain: '비즈니스', cluster: 'ops' },
+  { id: 'b11', label: '신사업 검토', domain: '비즈니스', cluster: 'strategy' },
+  { id: 'b12', label: '사업 계획', domain: '비즈니스', cluster: 'strategy' },
+  { id: 'b13', label: '경영 인사이트', domain: '비즈니스', cluster: 'strategy' },
+
+  // 학술/커리어
+  { id: 'a1', label: '학술 & 연구', domain: '학술/커리어', cluster: 'research' },
+  { id: 'a2', label: '논문 계획', domain: '학술/커리어', cluster: 'research' },
+  { id: 'a3', label: '연구 계획', domain: '학술/커리어', cluster: 'research' },
+  { id: 'a4', label: '빅데이터', domain: '학술/커리어', cluster: 'research' },
+  { id: 'a5', label: '교수님 CV', domain: '학술/커리어', cluster: 'research' },
+  { id: 'a6', label: '전공서적 정리', domain: '학술/커리어', cluster: 'study' },
+  { id: 'a7', label: '국토서원', domain: '학술/커리어', cluster: 'study' },
+  { id: 'a8', label: '수원', domain: '학술/커리어', cluster: 'study' },
+  { id: 'a9', label: '2022학년도', domain: '학술/커리어', cluster: 'study' },
+  { id: 'a10', label: '학위CV/SOP', domain: '학술/커리어', cluster: 'career' },
+  { id: 'a11', label: '코딩', domain: '학술/커리어', cluster: 'career' },
+
+  // 개인/라이프
+  { id: 'l1', label: '건강', domain: '개인/라이프', cluster: 'wellbeing' },
+  { id: 'l2', label: '상담', domain: '개인/라이프', cluster: 'wellbeing' },
+  { id: 'l3', label: '관계(2024)', domain: '개인/라이프', cluster: 'relation' },
+  { id: 'l4', label: '연애', domain: '개인/라이프', cluster: 'relation' },
+  { id: 'l5', label: '패널', domain: '개인/라이프', cluster: 'relation' },
+  { id: 'l6', label: '선교', domain: '개인/라이프', cluster: 'values' },
+  { id: 'l7', label: '북한', domain: '개인/라이프', cluster: 'values' },
+  { id: 'l8', label: '정치', domain: '개인/라이프', cluster: 'values' },
+  { id: 'l9', label: '독후감', domain: '개인/라이프', cluster: 'growth' },
+  { id: 'l10', label: '생활 & 성장', domain: '개인/라이프', cluster: 'growth' },
+  { id: 'l11', label: '계정 & 보안', domain: '개인/라이프', cluster: 'security' },
+
+  // 아카이브
+  { id: 'r1', label: '3월', domain: '아카이브', cluster: 'monthly' },
+  { id: 'r2', label: '4월', domain: '아카이브', cluster: 'monthly' },
+  { id: 'r3', label: '5월', domain: '아카이브', cluster: 'monthly' },
+  { id: 'r4', label: '스크랩', domain: '아카이브', cluster: 'ref' },
+  { id: 'r5', label: '스크랩 & 참고', domain: '아카이브', cluster: 'ref' },
+  { id: 'r6', label: '업무', domain: '아카이브', cluster: 'tasks' },
+  { id: 'r7', label: '해야할 것들', domain: '아카이브', cluster: 'tasks' },
+];
+
+// Edges: [source, target, type] type: 'hierarchy'|'cross'|'cluster'
+const edges = [
+  // Hub → children (hierarchy)
+  ['biz','b1','hierarchy'],['biz','b2','hierarchy'],['biz','b3','hierarchy'],
+  ['biz','b4','hierarchy'],['biz','b5','hierarchy'],['biz','b6','hierarchy'],
+  ['biz','b7','hierarchy'],['biz','b8','hierarchy'],['biz','b9','hierarchy'],
+  ['biz','b10','hierarchy'],['biz','b11','hierarchy'],['biz','b12','hierarchy'],['biz','b13','hierarchy'],
+  ['acad','a1','hierarchy'],['acad','a2','hierarchy'],['acad','a3','hierarchy'],
+  ['acad','a4','hierarchy'],['acad','a5','hierarchy'],['acad','a6','hierarchy'],
+  ['acad','a7','hierarchy'],['acad','a8','hierarchy'],['acad','a9','hierarchy'],
+  ['acad','a10','hierarchy'],['acad','a11','hierarchy'],
+  ['life','l1','hierarchy'],['life','l2','hierarchy'],['life','l3','hierarchy'],
+  ['life','l4','hierarchy'],['life','l5','hierarchy'],['life','l6','hierarchy'],
+  ['life','l7','hierarchy'],['life','l8','hierarchy'],['life','l9','hierarchy'],
+  ['life','l10','hierarchy'],['life','l11','hierarchy'],
+  ['arch','r1','hierarchy'],['arch','r2','hierarchy'],['arch','r3','hierarchy'],
+  ['arch','r4','hierarchy'],['arch','r5','hierarchy'],['arch','r6','hierarchy'],['arch','r7','hierarchy'],
+
+  // Cluster links (within domain)
+  ['b1','b2','cluster'],['b2','b3','cluster'],['b1','b3','cluster'], // finance
+  ['b4','b5','cluster'],['b5','b6','cluster'],['b4','b6','cluster'], // legal
+  ['b7','b8','cluster'],['b8','b9','cluster'],['b7','b9','cluster'], // entity
+  ['b11','b12','cluster'],['b12','b13','cluster'],['b11','b13','cluster'], // strategy
+  ['a2','a3','cluster'],['a3','a4','cluster'],['a2','a4','cluster'],['a1','a5','cluster'], // research
+  ['a7','a8','cluster'], // spatial research
+  ['a10','a11','cluster'], // career
+  ['l1','l2','cluster'], // wellbeing
+  ['l3','l4','cluster'],['l3','l5','cluster'], // relation
+  ['l6','l7','cluster'],['l7','l8','cluster'],['l6','l8','cluster'], // values
+  ['l9','l10','cluster'], // growth
+  ['r1','r2','cluster'],['r2','r3','cluster'], // monthly
+  ['r4','r5','cluster'], // reference
+  ['r6','r7','cluster'], // tasks
+
+  // Cross-domain links (the Obsidian magic!)
+  ['a4','a11','cross'],   // 빅데이터 ↔ 코딩
+  ['b12','a3','cross'],   // 사업계획 ↔ 연구계획
+  ['b13','a6','cross'],   // 경영인사이트 ↔ 전공서적
+  ['b11','a11','cross'],  // 신사업검토 ↔ 코딩
+  ['b3','l11','cross'],   // 부동산&재정 ↔ 계정&보안
+  ['b12','r6','cross'],   // 사업계획 ↔ 업무
+  ['b12','r7','cross'],   // 사업계획 ↔ 해야할것들
+  ['b13','r4','cross'],   // 경영인사이트 ↔ 스크랩
+  ['a10','l10','cross'],  // 학위CV ↔ 생활&성장
+  ['l7','a1','cross'],    // 북한 ↔ 학술&연구 (북한학 석사)
+  ['a6','r5','cross'],    // 전공서적 ↔ 스크랩&참고
+  ['a9','r1','cross'],    // 2022학년도 ↔ 월별기록
+  ['l9','r4','cross'],    // 독후감 ↔ 스크랩
+  ['b1','b9','cross'],    // 세무&회계 ↔ 개인사업자
+  ['b5','b7','cross'],    // 법률&등기 ↔ 법인사업자
+  ['a7','a3','cross'],    // 국토서원 ↔ 연구계획
+  ['a8','a3','cross'],    // 수원 ↔ 연구계획 (수원 군공항)
+  ['b10','l1','cross'],   // 사무실&인프라 ↔ 건강
+  ['l6','l7','cross'],    // 선교 ↔ 북한
+];
+
+// Position nodes
+const cx = W / 2, cy = H / 2;
+const hubPositions = {
+  'biz':  { x: cx - 250, y: cy - 180 },
+  'acad': { x: cx + 250, y: cy - 180 },
+  'life': { x: cx - 250, y: cy + 180 },
+  'arch': { x: cx + 250, y: cy + 180 },
+};
+
+nodes.forEach(n => {
+  if (n.hub) {
+    n.x = hubPositions[n.id].x;
+    n.y = hubPositions[n.id].y;
+    n.vx = 0; n.vy = 0;
+    n.radius = 22;
+  } else {
+    const hub = nodes.find(h => h.hub && h.domain === n.domain);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 80 + Math.random() * 120;
+    n.x = hub.x + Math.cos(angle) * dist;
+    n.y = hub.y + Math.sin(angle) * dist;
+    n.vx = 0; n.vy = 0;
+    n.radius = 8;
+  }
+});
+
+// Physics simulation
+const DAMPING = 0.85;
+const REPULSION = 800;
+const ATTRACTION = 0.008;
+const EDGE_LENGTH = 100;
+const CENTER_PULL = 0.0005;
+
+function simulate() {
+  nodes.forEach(n => {
+    nodes.forEach(m => {
+      if (n === m) return;
+      const dx = n.x - m.x, dy = n.y - m.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const force = REPULSION / (dist * dist);
+      n.vx += (dx/dist) * force;
+      n.vy += (dy/dist) * force;
+    });
+  });
+
+  edges.forEach(([sid, tid]) => {
+    const s = nodes.find(n => n.id === sid);
+    const t = nodes.find(n => n.id === tid);
+    if (!s || !t) return;
+    const dx = t.x - s.x, dy = t.y - s.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const force = (dist - EDGE_LENGTH) * ATTRACTION;
+    s.vx += (dx/dist) * force;
+    s.vy += (dy/dist) * force;
+    t.vx -= (dx/dist) * force;
+    t.vy -= (dy/dist) * force;
+  });
+
+  nodes.forEach(n => {
+    n.vx += (cx - n.x) * CENTER_PULL;
+    n.vy += (cy - n.y) * CENTER_PULL;
+    n.vx *= DAMPING;
+    n.vy *= DAMPING;
+    if (!n.dragging) {
+      n.x += n.vx;
+      n.y += n.vy;
+    }
+  });
+}
+
+// Camera
+let camX = 0, camY = 0, zoom = 1;
+let isDragging = false, dragNode = null, lastMouse = {x:0,y:0};
+let selectedNode = null;
+
+function screenToWorld(sx, sy) {
+  return { x: (sx - W/2)/zoom + cx + camX, y: (sy - H/2)/zoom + cy + camY };
+}
+function worldToScreen(wx, wy) {
+  return { x: (wx - cx - camX)*zoom + W/2, y: (wy - cy - camY)*zoom + H/2 };
+}
+
+canvas.addEventListener('mousedown', e => {
+  const wp = screenToWorld(e.clientX, e.clientY);
+  dragNode = null;
+  for (const n of nodes) {
+    const dx = wp.x - n.x, dy = wp.y - n.y;
+    if (dx*dx + dy*dy < (n.radius+6)*(n.radius+6)) {
+      dragNode = n;
+      n.dragging = true;
+      showDetail(n);
+      return;
+    }
+  }
+  isDragging = true;
+  lastMouse = {x: e.clientX, y: e.clientY};
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (dragNode) {
+    const wp = screenToWorld(e.clientX, e.clientY);
+    dragNode.x = wp.x;
+    dragNode.y = wp.y;
+  } else if (isDragging) {
+    camX -= (e.clientX - lastMouse.x) / zoom;
+    camY -= (e.clientY - lastMouse.y) / zoom;
+    lastMouse = {x: e.clientX, y: e.clientY};
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  if (dragNode) dragNode.dragging = false;
+  dragNode = null;
+  isDragging = false;
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom *= e.deltaY > 0 ? 0.92 : 1.08;
+  zoom = Math.max(0.3, Math.min(3, zoom));
+}, {passive: false});
+
+function showDetail(node) {
+  selectedNode = node;
+  const panel = document.getElementById('node-detail');
+  document.getElementById('detail-title').textContent = node.label;
+  document.getElementById('detail-domain').textContent = `도메인: ${node.domain}` + (node.cluster ? ` · 클러스터: ${node.cluster}` : '');
+
+  const connected = [];
+  edges.forEach(([s,t,type]) => {
+    if (s === node.id) {
+      const target = nodes.find(n => n.id === t);
+      if (target) connected.push({node: target, type});
+    }
+    if (t === node.id) {
+      const source = nodes.find(n => n.id === s);
+      if (source) connected.push({node: source, type});
+    }
+  });
+
+  const linksDiv = document.getElementById('detail-links');
+  linksDiv.innerHTML = '';
+  const types = {cross: '🔗 크로스', cluster: '📎 클러스터', hierarchy: '📂 계층'};
+  connected.forEach(({node: cn, type}) => {
+    const div = document.createElement('div');
+    div.className = 'link-item';
+    div.textContent = `${types[type]} → ${cn.label}`;
+    div.onclick = () => { showDetail(cn); };
+    linksDiv.appendChild(div);
+  });
+
+  panel.style.display = 'block';
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  const gridSize = 50 * zoom;
+  const offsetX = (W/2 - camX * zoom) % gridSize;
+  const offsetY = (H/2 - camY * zoom) % gridSize;
+  for (let x = offsetX; x < W; x += gridSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = offsetY; y < H; y += gridSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Draw edges
+  edges.forEach(([sid, tid, type]) => {
+    const s = nodes.find(n => n.id === sid);
+    const t = nodes.find(n => n.id === tid);
+    if (!s || !t) return;
+    const sp = worldToScreen(s.x, s.y);
+    const tp = worldToScreen(t.x, t.y);
+
+    const isHighlighted = selectedNode && (selectedNode.id === sid || selectedNode.id === tid);
+
+    ctx.beginPath();
+    ctx.moveTo(sp.x, sp.y);
+    ctx.lineTo(tp.x, tp.y);
+
+    if (type === 'cross') {
+      ctx.strokeStyle = isHighlighted ? 'rgba(236,72,153,0.8)' : 'rgba(236,72,153,0.2)';
+      ctx.lineWidth = isHighlighted ? 2.5 : 1;
+      ctx.setLineDash([6, 4]);
+    } else if (type === 'cluster') {
+      ctx.strokeStyle = isHighlighted ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = isHighlighted ? 1.5 : 0.5;
+      ctx.setLineDash([]);
+    } else {
+      ctx.strokeStyle = isHighlighted ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = isHighlighted ? 2 : 1;
+      ctx.setLineDash([]);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const sp = worldToScreen(n.x, n.y);
+    const color = DOMAIN_COLORS[n.domain];
+    const isSelected = selectedNode && selectedNode.id === n.id;
+    const isConnected = selectedNode && edges.some(([s,t]) =>
+      (s === selectedNode.id && t === n.id) || (t === selectedNode.id && s === n.id)
+    );
+
+    // Glow
+    if (n.hub || isSelected) {
+      const grd = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, (n.radius + 20) * zoom);
+      grd.addColorStop(0, color + '40');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, (n.radius + 20) * zoom, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Node circle
+    const r = n.radius * zoom;
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+
+    let alpha = '80';
+    if (isSelected) alpha = 'ff';
+    else if (isConnected) alpha = 'cc';
+    else if (selectedNode) alpha = '30';
+
+    ctx.fillStyle = color + alpha;
+    ctx.fill();
+
+    if (isSelected) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Label
+    if (zoom > 0.5 || n.hub) {
+      const fontSize = n.hub ? 13 * zoom : 10 * zoom;
+      ctx.font = `${n.hub ? 'bold' : ''} ${Math.max(8, fontSize)}px 'Segoe UI', sans-serif`;
+      ctx.fillStyle = (selectedNode && !isSelected && !isConnected) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.9)';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, sp.x, sp.y + r + 14 * zoom);
+    }
+  });
+}
+
+// Stats
+function updateStats() {
+  const crossLinks = edges.filter(e => e[2] === 'cross').length;
+  document.getElementById('stats').innerHTML =
+    `노드: ${nodes.length} · 엣지: ${edges.length} · 크로스링크: ${crossLinks} · 줌: ${zoom.toFixed(1)}x`;
+}
+
+let frame = 0;
+function loop() {
+  if (frame < 300 || dragNode) simulate();
+  draw();
+  frame++;
+  if (frame % 30 === 0) updateStats();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

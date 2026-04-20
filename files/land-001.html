@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STARGATE MATH | 대치동 수학·KOI 전문 | 서울대 출신 정동수</title>
+<meta name="description" content="서울대 최연소 입학(만 17세), 정보올림피아드 대상 수상. 대치동 수학·KOI·정보올림피아드 전문 과외. 수학 실력과 코딩 사고력을 동시에.">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f8f6f3;
+    --gold: #c9a227;
+    --gold-light: #e8d48b;
+    --navy: #1a1a2e;
+    --accent: #ff6b35;
+    --gray: #6b6b6b;
+    --card-bg: #111111;
+    --border: rgba(201,162,39,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  nav .container {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo {
+    font-weight: 900; font-size: 1.3rem; letter-spacing: 3px;
+    color: var(--gold);
+  }
+  .logo span { color: var(--white); font-weight: 300; }
+  .nav-cta {
+    background: var(--gold);
+    color: var(--black);
+    padding: 10px 28px;
+    border: none; border-radius: 4px;
+    font-weight: 700; font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+  .nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding-top: 80px;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; top: 0; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-tag {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 6px 18px;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    font-weight: 600;
+    animation: fadeInUp 0.8s ease;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.8s ease 0.15s both;
+  }
+  .hero h1 .gold { color: var(--gold); }
+  .hero h1 .thin { font-weight: 300; }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: #999;
+    max-width: 600px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.8s ease 0.3s both;
+  }
+  .hero-stats {
+    display: flex; gap: 48px; flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.45s both;
+  }
+  .stat-item .stat-num {
+    font-size: 2.5rem; font-weight: 900; color: var(--gold);
+    display: block; line-height: 1;
+  }
+  .stat-item .stat-label {
+    font-size: 0.8rem; color: #777; margin-top: 8px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  /* CREDENTIALS */
+  .credentials {
+    padding: 120px 0;
+    border-top: 1px solid var(--border);
+  }
+  .section-label {
+    font-size: 0.7rem; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px; font-weight: 600;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900; margin-bottom: 64px;
+    line-height: 1.3;
+  }
+  .cred-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .cred-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 36px;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cred-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .cred-card:hover::before { opacity: 1; }
+  .cred-card:hover { border-color: var(--border); transform: translateY(-4px); }
+  .cred-icon {
+    font-size: 2rem; margin-bottom: 20px; display: block;
+  }
+  .cred-card h3 {
+    font-size: 1.15rem; font-weight: 700; margin-bottom: 12px;
+    color: var(--white);
+  }
+  .cred-card p {
+    font-size: 0.9rem; color: #888; line-height: 1.8;
+  }
+  .cred-card .highlight {
+    color: var(--gold); font-weight: 700;
+  }
+
+  /* CURRICULUM */
+  .curriculum {
+    padding: 120px 0;
+    border-top: 1px solid var(--border);
+  }
+  .curr-tracks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 768px) { .curr-tracks { grid-template-columns: 1fr; } }
+  .track {
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 48px 40px;
+    background: var(--card-bg);
+    position: relative;
+  }
+  .track-badge {
+    position: absolute; top: -14px; left: 32px;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 6px 16px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .track h3 {
+    font-size: 1.6rem; font-weight: 900; margin-bottom: 8px;
+  }
+  .track .track-sub {
+    color: var(--gold); font-size: 0.85rem; font-weight: 600;
+    margin-bottom: 28px; letter-spacing: 1px;
+  }
+  .track ul {
+    list-style: none; padding: 0;
+  }
+  .track li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.95rem;
+    color: #bbb;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .track li::before {
+    content: '→';
+    color: var(--gold);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .track li:last-child { border-bottom: none; }
+
+  /* TARGET */
+  .target {
+    padding: 120px 0;
+    border-top: 1px solid var(--border);
+  }
+  .target-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .target-card {
+    text-align: center;
+    padding: 40px 24px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    background: var(--card-bg);
+    transition: all 0.3s;
+  }
+  .target-card:hover {
+    border-color: var(--gold);
+    background: rgba(201,162,39,0.04);
+  }
+  .target-emoji { font-size: 2.5rem; margin-bottom: 16px; display: block; }
+  .target-card h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+  .target-card p { font-size: 0.85rem; color: #888; }
+
+  /* DIFFERENCE */
+  .difference {
+    padding: 120px 0;
+    border-top: 1px solid var(--border);
+  }
+  .diff-list { max-width: 700px; }
+  .diff-item {
+    display: flex; gap: 24px;
+    padding: 32px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .diff-num {
+    font-size: 3rem; font-weight: 900; color: var(--gold);
+    opacity: 0.4; line-height: 1; flex-shrink: 0; width: 60px;
+  }
+  .diff-item h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+  .diff-item p { font-size: 0.9rem; color: #888; }
+
+  /* CTA */
+  .cta-section {
+    padding: 120px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(201,162,39,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900; margin-bottom: 20px;
+    position: relative;
+  }
+  .cta-sub {
+    color: #888; font-size: 1.05rem; margin-bottom: 48px;
+    position: relative;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--black);
+    padding: 18px 56px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .cta-btn:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(201,162,39,0.2); }
+  .cta-contact {
+    margin-top: 32px; color: #666; font-size: 0.9rem;
+    position: relative;
+  }
+  .cta-contact a { color: var(--gold); text-decoration: none; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.75rem;
+    color: #555;
+    line-height: 2;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    .hero-stats { gap: 32px; }
+    .cred-grid { grid-template-columns: 1fr; }
+    .target-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="logo">STARGATE <span>MATH</span></div>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfiCtN1NtKCF2Idvmx6qlTOuj0477zh9dr4fjbtH-rbcb06Tg/viewform" class="nav-cta" target="_blank">상담 신청</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-tag">대치동 프리미엄 수학·KOI 전문</div>
+    <h1>
+      <span class="thin">수학의 본질을 꿰뚫는</span><br>
+      <span class="gold">서울대 공학박사</span>의 수업
+    </h1>
+    <p class="hero-sub">
+      만 17세 서울대 공대 최연소 입학. 정보올림피아드 대상 수상.<br>
+      수학적 사고력과 알고리즘 실력을 동시에 끌어올리는 유일한 수업.
+    </p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">17세</span>
+        <span class="stat-label">서울대 최연소 입학</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">대상</span>
+        <span class="stat-label">정보올림피아드</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">SNU</span>
+        <span class="stat-label">박사 수료</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">25+</span>
+        <span class="stat-label">년 수학·IT 경력</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CREDENTIALS -->
+<section class="credentials reveal">
+  <div class="container">
+    <div class="section-label">Instructor Profile</div>
+    <h2 class="section-title">왜 정동수 강사인가</h2>
+    <div class="cred-grid">
+      <div class="cred-card">
+        <span class="cred-icon">🎓</span>
+        <h3>서울대 4관왕</h3>
+        <p>서울대 공대 학부(<span class="highlight">만 17세 최연소 입학</span>) → 석사 2개 → 스마트도시공학 <span class="highlight">박사 수료</span>. 대한민국 최상위 학력.</p>
+      </div>
+      <div class="cred-card">
+        <span class="cred-icon">🏆</span>
+        <h3>정보올림피아드 대상</h3>
+        <p>대구광역시 정보올림피아드 <span class="highlight">대상(1위)</span> 수상. 경시 수학과 알고리즘을 실전에서 증명한 출제자 수준의 통찰.</p>
+      </div>
+      <div class="cred-card">
+        <span class="cred-icon">💻</span>
+        <h3>AI·코딩 실전 전문가</h3>
+        <p>AI 소프트웨어 기업 <span class="highlight">CEO</span>. Python, 알고리즘, 머신러닝까지 — 수학을 넘어 IT 융합형 사고력을 가르칩니다.</p>
+      </div>
+      <div class="cred-card">
+        <span class="cred-icon">🔬</span>
+        <h3>연구·실무 겸비</h3>
+        <p>국토연구원·KDI 공동연구, 공간계량분석, <span class="highlight">공군참모총장상</span> 수상. 이론과 실전 모두 검증된 강사.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section class="curriculum reveal">
+  <div class="container">
+    <div class="section-label">Curriculum</div>
+    <h2 class="section-title">두 가지 트랙, 하나의 목표</h2>
+    <div class="curr-tracks">
+      <div class="track">
+        <div class="track-badge">Track A</div>
+        <h3>수학 심화</h3>
+        <div class="track-sub">중등 ~ 고등 내신·수능·경시</div>
+        <ul>
+          <li>수학적 사고력 기반 개념 완성 (암기 NO)</li>
+          <li>내신 1등급 로드맵 (학교별 맞춤)</li>
+          <li>수능 킬러문항·준킬러 집중 훈련</li>
+          <li>KMO(한국수학올림피아드) 대비 심화</li>
+          <li>영재고·과학고 입시 수학</li>
+        </ul>
+      </div>
+      <div class="track">
+        <div class="track-badge">Track B</div>
+        <h3>KOI · 정보올림피아드</h3>
+        <div class="track-sub">초등 영재 ~ 고등 본선</div>
+        <ul>
+          <li>C/C++·Python 기초부터 고급 자료구조</li>
+          <li>KOI 1차 필기 완벽 대비</li>
+          <li>KOI 2차 실기 — 기출 + 유형별 전략</li>
+          <li>알고리즘 사고력 (DP, 그래프, 그리디)</li>
+          <li>정보올림피아드 대상 수상자의 실전 노하우</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARGET -->
+<section class="target reveal">
+  <div class="container">
+    <div class="section-label">For Whom</div>
+    <h2 class="section-title">이런 학생에게 최적입니다</h2>
+    <div class="target-grid">
+      <div class="target-card">
+        <span class="target-emoji">🧮</span>
+        <h4>수학 상위권 도약</h4>
+        <p>2~3등급에서 1등급으로<br>개념 재정립이 필요한 학생</p>
+      </div>
+      <div class="target-card">
+        <span class="target-emoji">🏅</span>
+        <h4>KOI·KMO 준비생</h4>
+        <p>정보·수학 올림피아드<br>본선 진출을 목표로 하는 학생</p>
+      </div>
+      <div class="target-card">
+        <span class="target-emoji">🚀</span>
+        <h4>영재고·과학고 지망</h4>
+        <p>입시 수학 + 정보 실기<br>동시 대비가 필요한 학생</p>
+      </div>
+      <div class="target-card">
+        <span class="target-emoji">🤖</span>
+        <h4>AI·코딩 융합형</h4>
+        <p>수학 + 프로그래밍을<br>함께 배우고 싶은 학생</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFFERENCE -->
+<section class="difference reveal">
+  <div class="container">
+    <div class="section-label">Why Different</div>
+    <h2 class="section-title">대치동 수학 과외,<br>여기가 다릅니다</h2>
+    <div class="diff-list">
+      <div class="diff-item">
+        <div class="diff-num">01</div>
+        <div>
+          <h4>출제자 관점의 수업</h4>
+          <p>정보올림피아드 대상 수상 + 서울대 박사급 연구력. 문제를 '푸는 사람'이 아닌 '만드는 사람'의 관점으로 가르칩니다.</p>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-num">02</div>
+        <div>
+          <h4>수학 × 코딩 시너지</h4>
+          <p>수학적 사고력이 알고리즘 실력으로 연결됩니다. KOI와 수능 수학을 한 강사에게 동시에 배울 수 있는 유일한 곳.</p>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-num">03</div>
+        <div>
+          <h4>1:1 맞춤 로드맵</h4>
+          <p>학생의 현재 수준 진단 → 목표 설정 → 주차별 커리큘럼 설계. 대형 학원의 획일적 수업이 아닙니다.</p>
+        </div>
+      </div>
+      <div class="diff-item">
+        <div class="diff-num">04</div>
+        <div>
+          <h4>AI 기반 학습 관리</h4>
+          <p>자체 AI 시스템으로 학습 데이터를 분석하고 취약점을 정밀 보완합니다. 스타게이트 AI 기술력의 실전 적용.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="container">
+    <h2 class="cta-title">지금 시작하세요</h2>
+    <p class="cta-sub">무료 학력 진단 상담 후, 맞춤 커리큘럼을 설계해 드립니다.</p>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfiCtN1NtKCF2Idvmx6qlTOuj0477zh9dr4fjbtH-rbcb06Tg/viewform" class="cta-btn" target="_blank">무료 상담 신청 →</a>
+    <div class="cta-contact">
+      전화 문의: <a href="tel:07080178227">070-8017-8227</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+      이메일: <a href="mailto:rvcompany77@naver.com">rvcompany77@naver.com</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    회사명: (주)별의문 스타게이트 | 대표: 정동수 | 사업자등록번호: 371-99-01827<br>
+    통신판매업신고번호: 2025-서울강남-03504호 | 출판사 발행자번호: 993413<br>
+    개인과외교습자신고번호: 서초강남교육지원청 제5277호<br>
+    © 2025 Stargate Corporation. All rights reserved.
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

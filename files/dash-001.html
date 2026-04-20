@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stargate 법인 설립 전략 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8F5F2;
+            color: #3A3A3A;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #DDAF94;
+            border-bottom-color: #DDAF94;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .objective-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .objective-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tab-button.active {
+            background-color: #DDAF94;
+            color: #FFFFFF;
+        }
+        .tab-button {
+             transition: background-color 0.3s, color 0.3s;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-[#6B7A8F]">
+                🚀 Stargate 전략 대시보드
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#vision" class="nav-link font-medium pb-1">비전 & 시장</a>
+                <a href="#tax-strategy" class="nav-link font-medium pb-1">세금 감면 전략</a>
+                <a href="#objectives" class="nav-link font-medium pb-1">핵심 사업 목적</a>
+                <a href="#revenue" class="nav-link font-medium pb-1">수익 모델</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#vision" class="block py-2 text-center nav-link">비전 & 시장</a>
+            <a href="#tax-strategy" class="block py-2 text-center nav-link">세금 감면 전략</a>
+            <a href="#objectives" class="block py-2 text-center nav-link">핵심 사업 목적</a>
+            <a href="#revenue" class="block py-2 text-center nav-link">수익 모델</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="vision" class="mb-24 scroll-mt-20">
+            <h1 class="text-4xl font-bold text-center mb-4 text-[#6B7A8F]">Stargate의 비전과 시장 기회</h1>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                스타게이트는 AI 기술과 교육 콘텐츠를 결합하여 수학 교육 시장에 혁신을 가져오고자 합니다. 우리는 폭발적으로 성장하는 에듀테크 시장의 기회를 포착하고, 모든 학생에게 개인화된 학습 경험을 제공하여 수학에 대한 자신감을 심어주는 것을 목표로 합니다.
+            </p>
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h3 class="text-2xl font-bold text-center mb-2 text-[#3A3A3A]">한국 온라인 교육 시장 성장 전망</h3>
+                <p class="text-center text-gray-500 mb-6">데이터 소스에 따라 약간의 차이는 있으나, 공통적으로 연평균 24% 이상의 폭발적인 성장을 예측하고 있습니다.</p>
+                <div class="chart-container">
+                    <canvas id="marketGrowthChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="tax-strategy" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-[#6B7A8F]">청년창업세액감면 최적화 전략</h2>
+             <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                청년창업세액감면은 초기 기업에게 중요한 재정적 기반이 됩니다. 스타게이트의 성공적인 출발을 위해, 감면 요건을 정확히 이해하고 사업 구조를 최적화하는 것이 필수적입니다. 이 섹션에서는 감면율에 영향을 미치는 핵심 요소와 반드시 준수해야 할 업종 분류 기준을 탐색합니다.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-center mb-6">① 창업 지역별 세금 감면율</h3>
+                    <p class="text-center text-gray-500 mb-6">창업 지역에 따라 5년간 적용되는 법인세/소득세 감면율이 달라집니다. 아래 버튼을 클릭하여 차이를 확인해보세요.</p>
+                    <div class="flex justify-center space-x-4 mb-6">
+                        <button id="btn-seoul" class="px-6 py-2 rounded-lg font-semibold bg-gray-200 text-gray-700">수도권과밀억제권역 內</button>
+                        <button id="btn-outside" class="px-6 py-2 rounded-lg font-semibold bg-[#DDAF94] text-white">수도권과밀억제권역 外</button>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-lg text-gray-600 mb-2">선택한 지역의 예상 감면율:</p>
+                        <p id="tax-rate-display" class="text-6xl font-extrabold text-[#DDAF94] transition-all duration-300">100%</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-center mb-6">② 핵심 업종 분류 전략</h3>
+                     <p class="text-center text-gray-500 mb-6">세액감면을 받기 위해선 사업자 등록 시 올바른 업종을 선택하는 것이 가장 중요합니다.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                            <h4 class="font-bold text-lg text-green-800 mb-2">✔ 감면 대상 업종 (O)</h4>
+                            <ul class="space-y-2 text-green-700">
+                                <li><strong>정보통신업:</strong> AI 앱/플랫폼 개발, 온라인 콘텐츠 제공</li>
+                                <li><strong>출판업:</strong> 디지털/인쇄 교재 출판</li>
+                                <li><strong>전문, 과학 및 기술 서비스업:</strong> R&D, 솔루션 컨설팅</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                            <h4 class="font-bold text-lg text-red-800 mb-2">✖ 감면 제외 업종 (X)</h4>
+                            <ul class="space-y-2 text-red-700">
+                                <li><strong>교육 서비스업:</strong> 학원, 교습소 등 직접 교육</li>
+                                <li><strong>부동산업 및 임대업</strong></li>
+                                <li><strong>유흥주점업 등 소비성 서비스업</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                     <p class="text-center text-gray-500 mt-4 text-sm">스타게이트는 '교육 서비스'가 아닌 'IT 솔루션' 및 '콘텐츠 출판' 기업으로 명확히 포지셔닝해야 합니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="objectives" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-[#6B7A8F]">Stargate의 10대 핵심 사업 목적</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                스타게이트의 사업 목적은 시장의 기회를 활용하고 세금 감면 요건을 충족하도록 전략적으로 설계되었습니다. 각 카드를 클릭하여 세부적인 전략적 근거와 세액감면 적합성을 확인하세요.
+            </p>
+            <div id="objectives-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+
+        <section id="revenue" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-[#6B7A8F]">다각화된 수익 및 성장 모델</h2>
+             <p class="text-lg text-center max-w-3xl mx-auto mb-12 text-gray-600">
+                지속 가능한 성장을 위해 스타게이트는 여러 수익원을 결합한 비즈니스 모델을 추구합니다. 각 탭을 클릭하여 다양한 수익 창출 전략과 장기적인 성장 계획을 살펴보세요.
+            </p>
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div class="flex flex-wrap justify-center border-b border-gray-200 mb-6">
+                    <button data-tab="tab1" class="tab-button px-4 py-2 -mb-px border-b-2 border-transparent text-lg font-medium text-gray-500 hover:text-[#DDAF94] hover:border-[#DDAF94] focus:outline-none active">구독 모델</button>
+                    <button data-tab="tab2" class="tab-button px-4 py-2 -mb-px border-b-2 border-transparent text-lg font-medium text-gray-500 hover:text-[#DDAF94] hover:border-[#DDAF94] focus:outline-none">콘텐츠 직접 판매</button>
+                    <button data-tab="tab3" class="tab-button px-4 py-2 -mb-px border-b-2 border-transparent text-lg font-medium text-gray-500 hover:text-[#DDAF94] hover:border-[#DDAF94] focus:outline-none">B2B/B2G 라이선싱</button>
+                    <button data-tab="tab4" class="tab-button px-4 py-2 -mb-px border-b-2 border-transparent text-lg font-medium text-gray-500 hover:text-[#DDAF94] hover:border-[#DDAF94] focus:outline-none">플랫폼 중개</button>
+                </div>
+                <div id="tab-content">
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div id="modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="modal-close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">&times;</button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-[#6B7A8F]"></h3>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer class="bg-white mt-16">
+        <div class="container mx-auto px-6 py-4 text-center text-gray-500">
+            <p>&copy; 2025 Stargate Corporation. 이 페이지는 제공된 보고서를 기반으로 생성된 대화형 요약입니다.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const objectivesData = [
+        { title: 'AI 기반 개인 맞춤형 수학 학습 솔루션 개발', icon: '🧠', rationale: 'AI 기반 온라인 교육 시장의 높은 성장세와 개인 맞춤형 학습에 대한 수요 증가에 대응합니다. 학생의 약점을 진단하고 맞춤형 콘텐츠를 추천하는 AI 튜터 및 적응형 학습 경로 개발에 집중하여 학습 효율과 동기를 극대화합니다.', tax_suitability: '소프트웨어 개발 및 온라인 정보 제공 활동으로 \'정보통신업\'에 직접적으로 부합합니다.' },
+        { title: '혁신적인 디지털 수학 교육 콘텐츠 기획/제작', icon: '📚', rationale: '전자출판 시장의 견고한 성장과 몰입감 있는 학습 자료에 대한 요구를 반영합니다. 상호작용형 전자책, 디지털 워크북 등 앱과 연동되는 다양한 디지털 콘텐츠를 개발합니다.', tax_suitability: '\'출판업\'에 명확히 해당하며, 디지털 콘텐츠 제작 및 유통은 정보통신업과도 연계됩니다.' },
+        { title: '공교육 시장 대상 AI 디지털 교과서 공급', icon: '🏫', rationale: '정부의 AI 디지털 교과서 도입 정책 및 B2G 시장의 성장 기회를 활용합니다. 학교 및 교육기관에 라이선스를 제공하여 안정적인 장기 매출을 확보하고 공교육 디지털 전환에 기여합니다.', tax_suitability: '소프트웨어/플랫폼 개발은 \'정보통신업\'에, 디지털 교과서 콘텐츠는 \'출판업\'에 해당합니다.' },
+        { title: '수학 학습 부진 학생 진단/보완 프로그램', icon: '❤️‍🩹', rationale: '수학 학습에 어려움을 겪는 학생들의 미충족 수요를 해결합니다. AI 진단 도구로 원인을 파악하고, 자신감 향상을 위한 맞춤형 콘텐츠와 학습 경로를 앱을 통해 제공합니다.', tax_suitability: '직접 교육이 아닌 AI 학습 솔루션 및 디지털 콘텐츠의 기능으로 분류되어 \'정보통신업\' 및 \'출판업\'에 포함됩니다.' },
+        { title: '교사 지원용 AI 기반 LMS 개발', icon: '👩‍🏫', rationale: '교사들이 개인 맞춤형 학습 관리, 피드백 제공, 콘텐츠 맞춤화 등을 위해 필요로 하는 도구를 제공합니다. 이는 스타게이트의 B2B/B2G 역량을 강화합니다.', tax_suitability: '소프트웨어/시스템 개발 및 제공 활동으로 \'정보통신업\'에 해당합니다.' },
+        { title: '게임 기반 학습 콘텐츠 개발', icon: '🎮', rationale: '게임화 및 흥미로운 활동을 통해 학생들의 학습 동기와 집중력을 높이고, 수학을 즐겁고 효과적으로 학습할 수 있도록 지원합니다.', tax_suitability: '인터랙티브 콘텐츠 개발은 앱 개발 및 디지털 출판의 핵심 요소로, \'정보통신업\' 및 \'출판업\'에 포함됩니다.' },
+        { title: '글로벌 시장 진출 및 콘텐츠 현지화', icon: '🌍', rationale: '교육 콘텐츠 수출 증가 추세와 성공적인 에듀테크 기업들의 글로벌 확장 전략을 활용하여 해외 시장으로 사업 영역을 확장하고 매출을 다각화합니다.', tax_suitability: '플랫폼 개발 및 콘텐츠 현지화는 \'정보통신업\' 및 \'출판업\' 활동에 해당합니다.' },
+        { title: '빅데이터 기반 교육 효과 연구/개선', icon: '📊', rationale: '학습 데이터를 분석하여 솔루션의 효과성을 지속적으로 검증하고 개선합니다. 데이터 기반 접근 방식은 제품 경쟁력을 유지하고 사용자 유지에 기여합니다.', tax_suitability: '소프트웨어 및 콘텐츠 관련 R&D 활동은 \'정보통신업\' 또는 \'전문, 과학 및 기술 서비스업\'에 해당하여 세액감면 대상입니다.' },
+        { title: '교육기관/기업 대상 솔루션 컨설팅', icon: '🤝', rationale: '다른 교육기관이나 기업들이 첨단 수학 교육 기술을 도입하고자 할 때, 맞춤형 솔루션 및 컨설팅 서비스를 제공하여 B2B 수익 모델을 확장합니다.', tax_suitability: '정보 기술 및 소프트웨어 구현 관련 컨설팅 서비스는 \'정보통신업\' 또는 \'전문, 과학 및 기술 서비스업\'에 해당합니다.' },
+        { title: '학부모/교사 정보 커뮤니티 운영', icon: '💬', rationale: '제품 주변에 지원적인 생태계를 구축하여 학부모와 교육자들의 참여를 유도하고, 유용한 정보와 자원을 제공하여 브랜드 충성도를 높입니다.', tax_suitability: '온라인 정보 커뮤니티 및 지원 서비스 운영은 \'정보통신업\'(예: 기타 정보서비스업)으로 분류될 수 있습니다.' }
+    ];
+
+    const revenueData = {
+        tab1: { title: '구독 기반 디지털 학습 플랫폼', content: 'AI 기반 수학 학습 앱에 월별/연간 구독 모델을 적용하여 안정적인 반복 매출을 창출합니다. 기본, 프리미엄, 가족 플랜 등 다양한 등급을 제공하고 무료 체험 기간으로 잠재 고객을 유치합니다. 글로벌 에듀테크 기업들의 성공적인 모델입니다.' },
+        tab2: { title: '프리미엄 교육 콘텐츠 직접 판매', content: '자체 출판 역량을 활용하여 프리미엄 디지털(전자책, 워크북) 및 인쇄 교육 콘텐츠를 직접 판매합니다. 자체 플랫폼을 통해 판매 시, 유통 마진을 최소화하고 수익성을 극대화할 수 있습니다. 크라우드 펀딩, 굿즈 번들링 등 다양한 판매 전략을 구사합니다.' },
+        tab3: { title: 'B2B/B2G 솔루션 및 기관 라이선싱', content: '정부의 AI 디지털 교과서 도입 정책에 발맞춰 학교, 교육기관, 사설 학원 등에 AI 코스웨어, LMS, 교사 지원 도구 등을 직접 판매하거나 라이선싱합니다. 장기 계약을 통해 안정적인 수익 확보가 가능합니다.' },
+        tab4: { title: '1:1 튜터링/컨설팅 중개 (플랫폼 기능)', content: '직접적인 교육 서비스가 아닌, 플랫폼 내에서 튜터와 학습자를 연결하는 중개 서비스로 수익을 창출합니다. AI가 지원하는 실시간 튜터링이나 전문 튜터 매칭을 프리미엄 기능으로 제공하고, 수수료 기반 모델을 적용합니다.' }
+    };
+
+    const marketGrowthCtx = document.getElementById('marketGrowthChart').getContext('2d');
+    new Chart(marketGrowthCtx, {
+        type: 'line',
+        data: {
+            labels: ['2024', '2025', '2027', '2029', '2031', '2033', '2035'],
+            datasets: [{
+                label: '시장 규모 (백만 USD) - 전망 1',
+                data: [1686, 2099, 3268, 5088, 7922, 12224, null],
+                borderColor: '#DDAF94',
+                backgroundColor: 'rgba(221, 175, 148, 0.2)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: '시장 규모 (백만 USD) - 전망 2',
+                data: [1799, 2250, 3518, 5499, 8597, 13440, 21012],
+                borderColor: '#6B7A8F',
+                backgroundColor: 'rgba(107, 122, 143, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact' }).format(context.parsed.y * 1000000);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const btnSeoul = document.getElementById('btn-seoul');
+    const btnOutside = document.getElementById('btn-outside');
+    const taxRateDisplay = document.getElementById('tax-rate-display');
+
+    function updateTaxRate(rate, activeBtn, inactiveBtn) {
+        taxRateDisplay.textContent = `${rate}%`;
+        activeBtn.classList.add('bg-[#DDAF94]', 'text-white');
+        activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        inactiveBtn.classList.add('bg-gray-200', 'text-gray-700');
+        inactiveBtn.classList.remove('bg-[#DDAF94]', 'text-white');
+    }
+
+    btnSeoul.addEventListener('click', () => updateTaxRate(50, btnSeoul, btnOutside));
+    btnOutside.addEventListener('click', () => updateTaxRate(100, btnOutside, btnSeoul));
+
+    const objectivesGrid = document.getElementById('objectives-grid');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+
+    objectivesData.forEach(obj => {
+        const card = document.createElement('div');
+        card.className = 'objective-card bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center cursor-pointer';
+        card.innerHTML = `
+            <div class="text-4xl mb-4">${obj.icon}</div>
+            <h4 class="font-bold text-lg text-[#3A3A3A] flex-grow">${obj.title}</h4>
+        `;
+        card.addEventListener('click', () => {
+            modalTitle.textContent = `${obj.icon} ${obj.title}`;
+            modalBody.innerHTML = `
+                <div class="mb-6">
+                    <h5 class="font-bold text-xl mb-2 text-[#6B7A8F]">전략적 근거</h5>
+                    <p class="text-gray-600">${obj.rationale}</p>
+                </div>
+                <div>
+                    <h5 class="font-bold text-xl mb-2 text-[#6B7A8F]">세액감면 적합성</h5>
+                    <p class="text-gray-600">${obj.tax_suitability}</p>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+        objectivesGrid.appendChild(card);
+    });
+    
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContentContainer = document.getElementById('tab-content');
+
+    function updateTabContent(tabId) {
+        const data = revenueData[tabId];
+        tabContentContainer.innerHTML = `
+            <div class="p-4">
+                <h4 class="font-bold text-xl mb-2 text-[#3A3A3A]">${data.title}</h4>
+                <p class="text-gray-600">${data.content}</p>
+            </div>
+        `;
+        tabButtons.forEach(button => {
+            button.classList.remove('active', 'text-[#DDAF94]', 'border-[#DDAF94]');
+            button.classList.add('text-gray-500', 'border-transparent');
+            if (button.dataset.tab === tabId) {
+                button.classList.add('active', 'text-[#DDAF94]', 'border-[#DDAF94]');
+            }
+        });
+    }
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            updateTabContent(button.dataset.tab);
+        });
+    });
+
+    updateTabContent('tab1');
+    
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            document.querySelector(targetId).scrollIntoView({
+                behavior: 'smooth'
+            });
+            if (mobileMenu.classList.contains('hidden') === false) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

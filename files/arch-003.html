@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OpenClaw + KakaoTalk Architecture</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;line-height:1.6}
+    .container{max-width:480px;margin:0 auto;padding:0 16px}
+    .hero{text-align:center;padding:32px 16px;background:linear-gradient(180deg,#161b22,#0d1117);border-bottom:1px solid #30363d}
+    .hero h1{font-size:1.5rem;margin-bottom:8px;background:linear-gradient(135deg,#58a6ff,#a371f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{font-size:.875rem;color:#8b949e}
+    .overview{padding:24px 16px;background:#161b22;border-bottom:1px solid #30363d}
+    .overview h2{font-size:1rem;margin-bottom:12px}
+    .ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .ov-item{background:#21262d;border-radius:8px;padding:10px}
+    .ov-item .lbl{font-size:.625rem;color:#6e7681;text-transform:uppercase}
+    .ov-item .val{font-size:.8125rem;color:#39c5cf;font-family:monospace}
+    .diagram{padding:24px 16px}
+    .diagram h2{font-size:1rem;margin-bottom:12px;text-align:center}
+    .diagram-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px}
+    .diagram-svg{width:100%;height:auto;display:block}
+    .node-rect{rx:8;stroke-width:2}
+    .node-label{font-size:9px;font-weight:600;fill:#e6edf3}
+    .node-sub{font-size:7px;fill:#8b949e}
+    .node-port{font-size:7px;fill:#39c5cf;font-family:monospace}
+    .edge{fill:none;stroke-width:2;stroke-linecap:round;opacity:.3}
+    .edge.t{stroke:#3fb950}
+    .edge.i{stroke:#a371f7}
+    .fdot{opacity:0}
+    .fdot.t{fill:#3fb950}
+    .fdot.i{fill:#a371f7}
+
+    /* CSS-only tabs with radio buttons */
+    .tabs-wrap{padding:0 16px;margin-bottom:24px}
+    .tab-radio{display:none}
+    .tabs{display:flex;gap:8px;background:#161b22;border-radius:12px;padding:16px}
+    .tab-label{flex:1;padding:12px 8px;border:2px solid #30363d;border-radius:8px;background:transparent;color:#8b949e;font-size:.8125rem;font-weight:500;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+    .tab-label small{display:block;font-size:.6875rem;opacity:.7;margin-top:2px}
+    #tabText:checked ~ .tabs .tab-label[for="tabText"]{background:#21262d;border-color:#3fb950;color:#3fb950}
+    #tabImage:checked ~ .tabs .tab-label[for="tabImage"]{background:#21262d;border-color:#a371f7;color:#a371f7}
+
+    /* Steps visibility based on tab */
+    .steps-text,.steps-image{display:none}
+    #tabText:checked ~ .steps .steps-text{display:flex}
+    #tabImage:checked ~ .steps .steps-image{display:flex}
+    #tabText:checked ~ .steps .desc-text{display:block}
+    #tabImage:checked ~ .steps .desc-image{display:block}
+    .desc-text,.desc-image{display:none}
+
+    /* SVG flow animation based on tab */
+    #tabText:checked ~ .diagram .edge.t{opacity:1}
+    #tabText:checked ~ .diagram .fdot.t{opacity:1}
+    #tabImage:checked ~ .diagram .edge.i{opacity:1}
+    #tabImage:checked ~ .diagram .fdot.i{opacity:1}
+
+    .steps{padding-bottom:24px}
+    .steps h2{font-size:1rem;margin-bottom:8px;padding:0 16px}
+    .steps-desc{font-size:.8125rem;color:#6e7681;padding:0 16px;margin-bottom:12px}
+    .steps-scroll{display:flex;gap:12px;overflow-x:auto;padding:8px 16px 16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+    .steps-scroll::-webkit-scrollbar{display:none}
+    .step{flex:0 0 240px;scroll-snap-align:start;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px}
+    .step.t{border-left:3px solid #3fb950}
+    .step.i{border-left:3px solid #a371f7}
+    .step-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .step-num{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.75rem;font-weight:600}
+    .step.t .step-num{background:rgba(63,185,80,.2);color:#3fb950}
+    .step.i .step-num{background:rgba(163,113,247,.2);color:#a371f7}
+    .step-name{font-size:.8125rem;font-weight:600}
+    .step-icon{margin-left:auto}
+    .step-desc{font-size:.75rem;color:#8b949e;line-height:1.4;margin-bottom:6px}
+    .step-detail{font-size:.6875rem;color:#39c5cf;font-family:monospace;background:#21262d;padding:3px 6px;border-radius:4px;display:inline-block}
+
+    /* CSS-only accordion using details/summary */
+    .comps{padding:24px 16px;background:#161b22}
+    .comps h2{font-size:1rem;margin-bottom:12px}
+    details.acc{background:#21262d;border:1px solid #30363d;border-radius:10px;margin-bottom:8px;overflow:hidden}
+    summary.acc-head{display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+    summary.acc-head::-webkit-details-marker{display:none}
+    summary.acc-head::marker{display:none}
+    .acc-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1rem;flex-shrink:0}
+    .acc-icon.c1{background:rgba(0,212,255,.15)}
+    .acc-icon.c2{background:rgba(255,193,7,.15)}
+    .acc-icon.c3{background:rgba(63,185,80,.15)}
+    .acc-icon.c4{background:rgba(163,113,247,.15)}
+    .acc-icon.c5{background:rgba(88,166,255,.15)}
+    .acc-icon.c6{background:rgba(219,97,162,.15)}
+    .acc-icon.c7{background:rgba(163,113,247,.15)}
+    .acc-info{flex:1;min-width:0}
+    .acc-title{font-size:.875rem;font-weight:500}
+    .acc-sub{font-size:.6875rem;color:#6e7681}
+    .acc-arrow{width:18px;height:18px;color:#6e7681;transition:transform .2s;flex-shrink:0}
+    details.acc[open] .acc-arrow{transform:rotate(180deg)}
+    .acc-body{padding:0 14px 14px;border-top:1px solid #30363d}
+    details.acc[open] .acc-body{padding-top:14px}
+    .acc-desc{font-size:.75rem;color:#8b949e;margin-bottom:10px;line-height:1.5}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+    .info-item{background:#0d1117;border-radius:6px;padding:8px}
+    .info-item .lbl{font-size:.5625rem;color:#6e7681;text-transform:uppercase}
+    .info-item .val{font-size:.6875rem;color:#e6edf3;word-break:break-all}
+    .info-item .val.m{color:#39c5cf;font-family:monospace}
+    .code-box{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px;overflow-x:auto}
+    .code-box code{font-size:.625rem;color:#39c5cf;white-space:pre-wrap;font-family:monospace}
+
+    /* Commands section */
+    .cmds{padding:24px 16px}
+    .cmds h2{font-size:1rem;margin-bottom:12px}
+    .cmd-grp{margin-bottom:16px}
+    .cmd-grp h3{font-size:.8125rem;color:#8b949e;margin-bottom:8px}
+    .cmd-list{display:flex;flex-direction:column;gap:6px}
+    .cmd{display:flex;align-items:center;gap:8px;padding:10px;background:#161b22;border:1px solid #30363d;border-radius:8px}
+    .cmd-code{flex:1;font-size:.75rem;color:#39c5cf;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cmd-desc{font-size:.6875rem;color:#6e7681}
+
+    /* Copy button - select all on tap */
+    .cmd-code-wrap{flex:1;position:relative}
+    .cmd-code-input{width:100%;font-size:.75rem;color:#39c5cf;font-family:monospace;background:transparent;border:none;outline:none}
+    .cmd-code-input:focus{background:#0d1117;border-radius:4px;padding:2px 4px;margin:-2px -4px}
+
+    .footer{text-align:center;padding:24px 16px;color:#6e7681;font-size:.75rem;border-top:1px solid #30363d}
+
+    /* Legend */
+    .legend{display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:.75rem}
+    .legend-item{display:flex;align-items:center;gap:4px}
+    .legend-dot{width:10px;height:10px;border-radius:50%}
+    .legend-dot.t{background:#3fb950}
+    .legend-dot.i{background:#a371f7}
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>OpenClaw + KakaoTalk</h1>
+  <p>BlueStacks 부계정 연동 시스템 아키텍처</p>
+</header>
+
+<section class="overview">
+  <div class="container">
+    <h2>시스템 개요</h2>
+    <div class="ov-grid">
+      <div class="ov-item"><div class="lbl">브릿지 서버</div><div class="val">localhost:&lt;PORT&gt;</div></div>
+      <div class="ov-item"><div class="lbl">Gateway</div><div class="val">&lt;VPN_IP&gt;:&lt;PORT&gt;</div></div>
+      <div class="ov-item"><div class="lbl">에뮬레이터 ADB</div><div class="val">127.0.0.1:&lt;PORT&gt;</div></div>
+      <div class="ov-item"><div class="lbl">내부 브릿지 URL</div><div class="val">10.0.2.2:&lt;PORT&gt;</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CSS-only tabs using radio buttons -->
+<input type="radio" name="flow-tab" id="tabText" class="tab-radio" checked>
+<input type="radio" name="flow-tab" id="tabImage" class="tab-radio">
+
+<section class="diagram">
+  <h2>아키텍처 다이어그램</h2>
+  <div class="container">
+    <div class="diagram-box">
+      <svg class="diagram-svg" viewBox="0 0 340 480" xmlns="http://www.w3.org/2000/svg">
+        <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#21262d" stroke-width="0.5"/></pattern></defs>
+        <rect width="100%" height="100%" fill="url(#grid)" opacity="0.5"/>
+        <g class="edges">
+          <path class="edge t" id="et1" d="M170,75 L170,105"/>
+          <path class="edge t" id="et2" d="M170,155 L170,185"/>
+          <path class="edge t" id="et3" d="M170,235 L170,265"/>
+          <path class="edge t" id="et4" d="M170,315 L170,345"/>
+          <path class="edge t" id="et5" d="M170,395 L170,425"/>
+          <path class="edge i" id="ei1" d="M215,55 Q290,55 290,110"/>
+          <path class="edge i" id="ei2" d="M290,150 L290,220"/>
+          <path class="edge i" id="ei3" d="M290,260 L290,330"/>
+          <path class="edge i" id="ei4" d="M290,370 Q290,410 235,420"/>
+          <path class="edge i" id="ei5" d="M105,420 Q50,410 50,330"/>
+          <path class="edge i" id="ei6" d="M50,290 L50,180"/>
+          <path class="edge i" id="ei7" d="M50,140 Q50,90 105,70"/>
+        </g>
+        <text x="85" y="42" font-size="8" fill="#3fb950">텍스트</text>
+        <text x="255" y="42" font-size="8" fill="#a371f7">이미지</text>
+        <g class="flow-dots">
+          <circle class="fdot t" r="4"><animateMotion dur="0.7s" repeatCount="indefinite"><mpath href="#et1"/></animateMotion></circle>
+          <circle class="fdot t" r="4"><animateMotion dur="0.7s" repeatCount="indefinite" begin="0.15s"><mpath href="#et2"/></animateMotion></circle>
+          <circle class="fdot t" r="4"><animateMotion dur="0.7s" repeatCount="indefinite" begin="0.3s"><mpath href="#et3"/></animateMotion></circle>
+          <circle class="fdot t" r="4"><animateMotion dur="0.7s" repeatCount="indefinite" begin="0.45s"><mpath href="#et4"/></animateMotion></circle>
+          <circle class="fdot i" r="4"><animateMotion dur="1s" repeatCount="indefinite"><mpath href="#ei1"/></animateMotion></circle>
+          <circle class="fdot i" r="4"><animateMotion dur="1s" repeatCount="indefinite" begin="0.25s"><mpath href="#ei2"/></animateMotion></circle>
+          <circle class="fdot i" r="4"><animateMotion dur="1s" repeatCount="indefinite" begin="0.5s"><mpath href="#ei3"/></animateMotion></circle>
+        </g>
+        <g class="nodes">
+          <g transform="translate(170,55)">
+            <rect class="node-rect" x="-60" y="-30" width="120" height="45" fill="#161b22" stroke="#00d4ff"/>
+            <text class="node-label" text-anchor="middle" y="-8">BlueStacks + KakaoTalk</text>
+            <text class="node-sub" text-anchor="middle" y="5">안드로이드 에뮬레이터</text>
+          </g>
+          <g transform="translate(170,130)">
+            <rect class="node-rect" x="-50" y="-25" width="100" height="50" fill="#161b22" stroke="#ffc107"/>
+            <text class="node-label" text-anchor="middle" y="-5">MessengerBotR</text>
+            <text class="node-sub" text-anchor="middle" y="8">알림 감지 + 응답</text>
+          </g>
+          <g transform="translate(290,130)">
+            <rect class="node-rect" x="-30" y="-20" width="60" height="40" fill="#161b22" stroke="#a371f7"/>
+            <text class="node-label" text-anchor="middle" y="0">ADB</text>
+            <text class="node-sub" text-anchor="middle" y="10">Watcher</text>
+          </g>
+          <g transform="translate(170,210)">
+            <rect class="node-rect" x="-55" y="-25" width="110" height="50" fill="#161b22" stroke="#3fb950"/>
+            <text class="node-label" text-anchor="middle" y="-5">Memento Bridge</text>
+            <text class="node-port" text-anchor="middle" y="8">:&lt;PORT&gt;</text>
+          </g>
+          <g transform="translate(290,240)">
+            <rect class="node-rect" x="-30" y="-20" width="60" height="40" fill="#161b22" stroke="#db61a2"/>
+            <text class="node-label" text-anchor="middle" y="0">Storage</text>
+            <text class="node-sub" text-anchor="middle" y="10">이미지</text>
+          </g>
+          <g transform="translate(170,290)">
+            <rect class="node-rect" x="-55" y="-25" width="110" height="50" fill="#161b22" stroke="#58a6ff"/>
+            <text class="node-label" text-anchor="middle" y="-5">OpenClaw Gateway</text>
+            <text class="node-port" text-anchor="middle" y="8">:&lt;PORT&gt; (VPN)</text>
+          </g>
+          <g transform="translate(290,350)">
+            <rect class="node-rect" x="-30" y="-18" width="60" height="36" fill="#161b22" stroke="#d29922" stroke-dasharray="4,2"/>
+            <text class="node-label" text-anchor="middle" y="0">폴링</text>
+            <text class="node-sub" text-anchor="middle" y="10">N초</text>
+          </g>
+          <g transform="translate(170,370)">
+            <rect class="node-rect" x="-45" y="-22" width="90" height="44" fill="#161b22" stroke="#a371f7"/>
+            <text class="node-label" text-anchor="middle" y="-2">Claude AI</text>
+            <text class="node-sub" text-anchor="middle" y="10">텍스트/이미지 분석</text>
+          </g>
+          <g transform="translate(170,445)">
+            <rect class="node-rect" x="-40" y="-15" width="80" height="30" fill="#161b22" stroke="#3fb950" stroke-dasharray="4,2"/>
+            <text class="node-label" text-anchor="middle" y="3">응답 반환</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot t"></span> 텍스트 흐름</div>
+      <div class="legend-item"><span class="legend-dot i"></span> 이미지 흐름</div>
+    </div>
+  </div>
+</section>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <label class="tab-label" for="tabText">텍스트 메시지<small>6단계</small></label>
+    <label class="tab-label" for="tabImage">이미지 메시지<small>10단계</small></label>
+  </div>
+</div>
+
+<section class="steps">
+  <h2 class="container">단계별 데이터 흐름</h2>
+  <p class="steps-desc desc-text">텍스트 메시지가 카카오톡에서 Claude AI까지 전달되는 과정</p>
+  <p class="steps-desc desc-image">이미지가 ADB를 통해 분석되고 결과가 폴링으로 전달되는 과정</p>
+
+  <div class="steps-scroll steps-text">
+    <div class="step t"><div class="step-head"><span class="step-num">1</span><span class="step-name">KakaoTalk</span><span class="step-icon">📱</span></div><p class="step-desc">사용자가 카카오톡 채팅방에서 메시지를 전송합니다.</p><span class="step-detail">메시지 수신</span></div>
+    <div class="step t"><div class="step-head"><span class="step-num">2</span><span class="step-name">MessengerBotR</span><span class="step-icon">🤖</span></div><p class="step-desc">알림 감지 후 onMessage 콜백 실행. 메시지와 발신자 정보 추출.</p><span class="step-detail">Event.MESSAGE</span></div>
+    <div class="step t"><div class="step-head"><span class="step-num">3</span><span class="step-name">Bridge Server</span><span class="step-icon">🌉</span></div><p class="step-desc">Jsoup HTTP로 브릿지 서버에 POST 요청을 보냅니다.</p><span class="step-detail">POST /webhook/memento</span></div>
+    <div class="step t"><div class="step-head"><span class="step-num">4</span><span class="step-name">Gateway</span><span class="step-icon">⚡</span></div><p class="step-desc">세션 키 생성 후 Gateway Chat Completions API 호출.</p><span class="step-detail">POST /v1/chat/completions</span></div>
+    <div class="step t"><div class="step-head"><span class="step-num">5</span><span class="step-name">Claude AI</span><span class="step-icon">🧠</span></div><p class="step-desc">메시지 분석 및 응답 생성. 세션별 대화 컨텍스트 유지.</p><span class="step-detail">claude-3.5-sonnet</span></div>
+    <div class="step t"><div class="step-head"><span class="step-num">6</span><span class="step-name">응답 전송</span><span class="step-icon">💬</span></div><p class="step-desc">응답이 역순으로 전달되어 카카오톡에 답장.</p><span class="step-detail">msg.reply(response)</span></div>
+  </div>
+
+  <div class="steps-scroll steps-image">
+    <div class="step i"><div class="step-head"><span class="step-num">1</span><span class="step-name">KakaoTalk</span><span class="step-icon">📱</span></div><p class="step-desc">사용자가 카카오톡으로 이미지를 전송합니다.</p><span class="step-detail">이미지 메시지</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">2</span><span class="step-name">자동 저장</span><span class="step-icon">💾</span></div><p class="step-desc">카카오톡 설정에 따라 이미지가 기기에 저장됩니다.</p><span class="step-detail">/sdcard/Pictures/KakaoTalk/</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">3</span><span class="step-name">ADB Watcher</span><span class="step-icon">👁️</span></div><p class="step-desc">Python 스크립트가 주기적으로 새 이미지 감지.</p><span class="step-detail">adb shell ls -t</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">4</span><span class="step-name">ADB Pull</span><span class="step-icon">📥</span></div><p class="step-desc">ADB 명령으로 이미지를 호스트 PC로 다운로드.</p><span class="step-detail">adb pull ...</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">5</span><span class="step-name">Bridge</span><span class="step-icon">🌉</span></div><p class="step-desc">Base64 인코딩 후 브릿지 서버로 전송.</p><span class="step-detail">POST /webhook/image</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">6</span><span class="step-name">Storage</span><span class="step-icon">📁</span></div><p class="step-desc">이미지를 로컬 파일로 저장. Claude가 직접 읽기 가능.</p><span class="step-detail">kakao-images/*.jpg</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">7</span><span class="step-name">Gateway</span><span class="step-icon">⚡</span></div><p class="step-desc">로컬 파일 경로 포함 프롬프트로 분석 요청.</p><span class="step-detail">이미지 경로 전달</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">8</span><span class="step-name">Claude Vision</span><span class="step-icon">🧠</span></div><p class="step-desc">Read 도구로 이미지 분석 및 결과 생성.</p><span class="step-detail">멀티모달 분석</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">9</span><span class="step-name">결과 저장</span><span class="step-icon">💾</span></div><p class="step-desc">분석 결과가 메모리에 저장 (일정 시간 유효).</p><span class="step-detail">GET /check-image-result</span></div>
+    <div class="step i"><div class="step-head"><span class="step-num">10</span><span class="step-name">응답</span><span class="step-icon">💬</span></div><p class="step-desc">MessengerBotR이 폴링으로 결과를 가져와 응답.</p><span class="step-detail">주기적 폴링</span></div>
+  </div>
+</section>
+
+<section class="comps">
+  <div class="container">
+    <h2>구성요소 상세</h2>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c1">📱</div>
+        <div class="acc-info"><div class="acc-title">BlueStacks + KakaoTalk</div><div class="acc-sub">안드로이드 에뮬레이터</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">BlueStacks에서 카카오톡 부계정을 실행합니다. MessengerBotR 앱이 알림을 감지하고 자동 응답합니다.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">ADB 주소</div><div class="val m">127.0.0.1:&lt;PORT&gt;</div></div>
+          <div class="info-item"><div class="lbl">내부 브릿지</div><div class="val m">10.0.2.2:&lt;PORT&gt;</div></div>
+          <div class="info-item"><div class="lbl">이미지 경로</div><div class="val m">/sdcard/Pictures/KakaoTalk/</div></div>
+          <div class="info-item"><div class="lbl">필수 설정</div><div class="val">ADB 활성화</div></div>
+        </div>
+        <div class="code-box"><code>Settings > Advanced > ADB > Enable</code></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c2">🤖</div>
+        <div class="acc-info"><div class="acc-title">MessengerBotR</div><div class="acc-sub">카카오톡 자동응답 앱</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">카카오톡 알림을 감지하고 JavaScript로 자동 응답합니다. Jsoup 라이브러리로 HTTP 요청을 보냅니다.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">브릿지 URL</div><div class="val m">http://10.0.2.2:&lt;PORT&gt;</div></div>
+          <div class="info-item"><div class="lbl">HTTP 라이브러리</div><div class="val">org.jsoup.Jsoup</div></div>
+          <div class="info-item"><div class="lbl">타임아웃</div><div class="val">30초</div></div>
+          <div class="info-item"><div class="lbl">최대 메시지</div><div class="val">800자</div></div>
+        </div>
+        <div class="code-box"><code>bot.addListener(Event.MESSAGE, onMessage);</code></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c3">🌉</div>
+        <div class="acc-info"><div class="acc-title">Memento Bridge</div><div class="acc-sub">Node.js 중계 서버</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">MessengerBotR과 Gateway 사이를 중계합니다. 세션 관리, 이미지 저장, 명령어 처리를 담당합니다.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">포트</div><div class="val m">&lt;PORT&gt;</div></div>
+          <div class="info-item"><div class="lbl">파일</div><div class="val m">memento-bridge.mjs</div></div>
+          <div class="info-item"><div class="lbl">메시지 엔드포인트</div><div class="val m">/webhook/memento</div></div>
+          <div class="info-item"><div class="lbl">이미지 엔드포인트</div><div class="val m">/webhook/image</div></div>
+        </div>
+        <div class="code-box"><code>node memento-bridge.mjs</code></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c4">👁️</div>
+        <div class="acc-info"><div class="acc-title">ADB Image Watcher</div><div class="acc-sub">Python 이미지 모니터</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">BlueStacks 내 이미지 폴더를 주기적으로 모니터링. 새 이미지 감지 시 로컬로 다운로드 후 브릿지로 전송.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">언어</div><div class="val">Python 3.8+</div></div>
+          <div class="info-item"><div class="lbl">체크 간격</div><div class="val">N초</div></div>
+          <div class="info-item"><div class="lbl">파일</div><div class="val m">adb-image-watcher.py</div></div>
+          <div class="info-item"><div class="lbl">중복 방지</div><div class="val">MD5 해시</div></div>
+        </div>
+        <div class="code-box"><code>python adb-image-watcher.py --auto-port</code></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c5">⚡</div>
+        <div class="acc-info"><div class="acc-title">OpenClaw Gateway</div><div class="acc-sub">AI 에이전트 게이트웨이</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">Claude API를 래핑하는 게이트웨이. 세션 관리, 도구 호출, 인증 담당. VPN을 통해 접근.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">주소</div><div class="val m">&lt;VPN_IP&gt;:&lt;PORT&gt;</div></div>
+          <div class="info-item"><div class="lbl">네트워크</div><div class="val">VPN</div></div>
+          <div class="info-item"><div class="lbl">인증</div><div class="val">Bearer Token</div></div>
+          <div class="info-item"><div class="lbl">설정</div><div class="val m">openclaw.json</div></div>
+        </div>
+        <div class="code-box"><code>openclaw gateway status</code></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c6">📁</div>
+        <div class="acc-info"><div class="acc-title">Image Storage</div><div class="acc-sub">로컬 이미지 저장소</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">브릿지가 이미지를 로컬 파일로 저장. Claude Code가 Read 도구로 직접 분석 가능.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">경로</div><div class="val m">%USERPROFILE%\...\kakao-images\</div></div>
+          <div class="info-item"><div class="lbl">파일명</div><div class="val m">chat-{ts}-{sender}.jpg</div></div>
+          <div class="info-item"><div class="lbl">HTTP 접근</div><div class="val m">GET /images/{file}</div></div>
+          <div class="info-item"><div class="lbl">포맷</div><div class="val">JPG, PNG, GIF, WebP</div></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary class="acc-head">
+        <div class="acc-icon c7">🧠</div>
+        <div class="acc-info"><div class="acc-title">Claude AI</div><div class="acc-sub">Anthropic AI 모델</div></div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="acc-body">
+        <p class="acc-desc">텍스트와 이미지를 분석하고 응답 생성. Gateway의 세션 관리로 대화 컨텍스트 유지.</p>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">모델</div><div class="val">Claude 3.5 Sonnet</div></div>
+          <div class="info-item"><div class="lbl">비전</div><div class="val">멀티모달 지원</div></div>
+          <div class="info-item"><div class="lbl">세션</div><div class="val">사용자별 컨텍스트</div></div>
+          <div class="info-item"><div class="lbl">폴백</div><div class="val">Gemini Flash</div></div>
+        </div>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<section class="cmds">
+  <div class="container">
+    <h2>명령어 레퍼런스</h2>
+    <p style="font-size:.75rem;color:#6e7681;margin-bottom:12px">명령어를 탭하면 선택됩니다</p>
+    <div class="cmd-grp">
+      <h3>카카오톡 명령어</h3>
+      <div class="cmd-list">
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="/ping" readonly></div><span class="cmd-desc">봇 실행 확인</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="/bridgeping" readonly></div><span class="cmd-desc">브릿지 연결</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="/status" readonly></div><span class="cmd-desc">시스템 상태</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="/clear" readonly></div><span class="cmd-desc">세션 초기화</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="/질문 [내용]" readonly></div><span class="cmd-desc">그룹톡 AI</span></div>
+      </div>
+    </div>
+    <div class="cmd-grp">
+      <h3>시스템 명령어</h3>
+      <div class="cmd-list">
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="node memento-bridge.mjs" readonly></div><span class="cmd-desc">브릿지</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="python adb-image-watcher.py -a" readonly></div><span class="cmd-desc">ADB 감시</span></div>
+        <div class="cmd"><div class="cmd-code-wrap"><input type="text" class="cmd-code-input" value="openclaw gateway status" readonly></div><span class="cmd-desc">Gateway</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer"><p>OpenClaw + KakaoTalk Architecture</p></footer>
+
+</body>
+</html>

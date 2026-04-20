@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주간 대시보드 | 2026-W12 (3/16~3/22)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-card: #1a1d28;
+            --bg-header: #12141e;
+            --text-primary: #e8eaed;
+            --text-secondary: #8b8fa3;
+            --text-on-dark: #ffffff;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --color-optimize: #00b894;
+            --color-efficiency: #0984e3;
+            --color-revenue: #fdcb6e;
+            --color-communication: #e17055;
+            --color-deepwork: #6c5ce7;
+            --color-study: #00cec9;
+            --color-routine: #636e72;
+            --color-meeting: #d63031;
+            --color-admin: #fdcb6e;
+            --positive: #00b894;
+            --negative: #d63031;
+            --warning: #fdcb6e;
+            --gap: 16px;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: var(--gap);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #1a1d28 0%, #2d1f4e 100%);
+            padding: 24px 32px;
+            border-radius: var(--radius);
+            margin-bottom: var(--gap);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .header-left h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-on-dark);
+            margin-bottom: 4px;
+        }
+
+        .header-left .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .kpi-card.tasks::before { background: var(--accent); }
+        .kpi-card.events::before { background: var(--color-study); }
+        .kpi-card.deepwork::before { background: var(--color-deepwork); }
+        .kpi-card.emails::before { background: var(--color-revenue); }
+        .kpi-card.alerts::before { background: var(--negative); }
+
+        .kpi-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-on-dark);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .kpi-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .chart-container h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .chart-container canvas {
+            max-height: 280px;
+        }
+
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+        }
+
+        .task-item:last-child { border-bottom: none; }
+
+        .task-area {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .area-optimize { background: rgba(0,184,148,0.15); color: var(--color-optimize); }
+        .area-efficiency { background: rgba(9,132,227,0.15); color: var(--color-efficiency); }
+        .area-revenue { background: rgba(253,203,110,0.15); color: var(--color-revenue); }
+        .area-communication { background: rgba(225,112,85,0.15); color: var(--color-communication); }
+        .area-waiting { background: rgba(99,110,114,0.15); color: var(--color-routine); }
+        .area-gmail { background: rgba(253,203,110,0.15); color: var(--color-admin); }
+
+        .task-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .event-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 12px;
+        }
+
+        .event-time {
+            color: var(--accent-light);
+            font-weight: 600;
+            min-width: 45px;
+            font-size: 11px;
+        }
+
+        .event-title {
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .event-tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .tag-deepwork { background: rgba(108,92,231,0.2); color: var(--color-deepwork); }
+        .tag-study { background: rgba(0,206,201,0.2); color: var(--color-study); }
+        .tag-meeting { background: rgba(214,48,49,0.2); color: var(--color-meeting); }
+        .tag-routine { background: rgba(99,110,114,0.2); color: var(--color-routine); }
+        .tag-admin { background: rgba(253,203,110,0.2); color: var(--color-admin); }
+
+        .alert-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(214,48,49,0.08);
+            border-left: 3px solid var(--negative);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .alert-item.warning {
+            background: rgba(253,203,110,0.08);
+            border-left-color: var(--warning);
+        }
+
+        .alert-item.info {
+            background: rgba(108,92,231,0.08);
+            border-left-color: var(--accent);
+        }
+
+        .slack-msg {
+            padding: 12px;
+            background: rgba(108,92,231,0.06);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            border: 1px solid rgba(108,92,231,0.1);
+        }
+
+        .slack-msg .msg-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+
+        .slack-msg .msg-body {
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .email-summary {
+            display: flex;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 12px;
+        }
+
+        .email-from {
+            color: var(--accent-light);
+            font-weight: 600;
+            min-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-subject {
+            color: var(--text-primary);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-date {
+            color: var(--text-secondary);
+            font-size: 11px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .section-title h3 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--accent);
+            color: white;
+        }
+
+        .day-toggle {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .day-btn {
+            padding: 4px 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-btn:hover, .day-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .day-btn.today {
+            border-color: var(--accent-light);
+            color: var(--accent-light);
+        }
+
+        .scroll-area {
+            max-height: 340px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+
+        .scroll-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .kpi-row { grid-template-columns: repeat(3, 1fr); }
+            .chart-row, .three-col { grid-template-columns: 1fr; }
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-header { flex-direction: column; }
+        }
+
+        @media print {
+            body { background: white; color: black; }
+            .bg-card { background: white; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1>Weekly Command Center</h1>
+                <div class="subtitle">2026년 3월 W12 (3/16 월 ~ 3/22 일) &middot; 정동수 &middot; 별의문 Inc.</div>
+            </div>
+            <div class="header-right">
+                <span style="font-size:12px; color:var(--text-secondary);">Data as of: 2026-03-22 KST</span>
+            </div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="kpi-row">
+            <div class="kpi-card tasks">
+                <div class="kpi-icon">📋</div>
+                <div class="kpi-label">Active Tasks</div>
+                <div class="kpi-value">9</div>
+                <div class="kpi-detail">7 Notion + 2 Gmail</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:0%; background:var(--accent);"></div></div>
+            </div>
+            <div class="kpi-card events">
+                <div class="kpi-icon">📅</div>
+                <div class="kpi-label">Weekly Events</div>
+                <div class="kpi-value">46</div>
+                <div class="kpi-detail">Mon~Sun 전체</div>
+            </div>
+            <div class="kpi-card deepwork">
+                <div class="kpi-icon">🔥</div>
+                <div class="kpi-label">Deep Work Hrs</div>
+                <div class="kpi-value">33h</div>
+                <div class="kpi-detail">딥워크 + 수업준비</div>
+            </div>
+            <div class="kpi-card emails">
+                <div class="kpi-icon">📧</div>
+                <div class="kpi-label">Emails (Week)</div>
+                <div class="kpi-value">30+</div>
+                <div class="kpi-detail">5 중요, 2 액션필요</div>
+            </div>
+            <div class="kpi-card alerts">
+                <div class="kpi-icon">🚨</div>
+                <div class="kpi-label">Alerts</div>
+                <div class="kpi-value">3</div>
+                <div class="kpi-detail">Perplexity, Stripe, GitHub</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>일별 시간 블록 분포</h3>
+                <canvas id="timeBlockChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>태스크 영역 분포</h3>
+                <canvas id="taskAreaChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Three Column: Tasks / Calendar / Alerts -->
+        <div class="three-col">
+            <!-- Tasks -->
+            <div class="chart-container">
+                <div class="section-title">
+                    <h3>📋 Active Tasks</h3>
+                    <span class="badge">9</span>
+                </div>
+                <div class="scroll-area">
+                    <ul class="task-list" id="taskList">
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-efficiency">효율화</span>
+                            <span>반복 작업 인벤토리 작성</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-efficiency">효율화</span>
+                            <span>체크리스트 템플릿 통합</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-efficiency">효율화</span>
+                            <span>단축키/스니펫 10개 선정</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-revenue">수익화</span>
+                            <span>리드 소스 실험 2개 세팅</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-revenue">수익화</span>
+                            <span>오퍼 3종 정의(가치/가격/보장)</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-optimize">최적화</span>
+                            <span>주간 리뷰 15분 슬롯 캘린더 고정</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-communication">소통화</span>
+                            <span>메시지 3줄 포맷 확정</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-gmail">Gmail</span>
+                            <span>Stripe 계정 셋업 완료</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-gmail">Gmail</span>
+                            <span>Perplexity 크레딧 충전</span>
+                        </li>
+                        <li class="task-item" style="opacity:0.5;">
+                            <div class="task-checkbox"></div>
+                            <span class="task-area area-waiting">대기중</span>
+                            <span>GitHub 토큰 재발급</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Today's Calendar -->
+            <div class="chart-container">
+                <div class="section-title">
+                    <h3>📅 일별 캘린더</h3>
+                </div>
+                <div class="day-toggle" id="dayToggle"></div>
+                <div class="scroll-area" id="calendarView"></div>
+            </div>
+
+            <!-- Alerts & Notifications -->
+            <div class="chart-container">
+                <div class="section-title">
+                    <h3>🚨 Alerts & Actions</h3>
+                </div>
+                <div class="scroll-area">
+                    <div class="alert-item">
+                        <span>🔴</span>
+                        <div>
+                            <strong>Perplexity 크레딧 소진</strong><br>
+                            <span style="color:var(--text-secondary);">3/22 — "You're out of credits" auto-refill 필요</span>
+                        </div>
+                    </div>
+                    <div class="alert-item warning">
+                        <span>🟡</span>
+                        <div>
+                            <strong>Stripe 계정 셋업 미완료</strong><br>
+                            <span style="color:var(--text-secondary);">3/20 — "Start setting up" + 비인식 기기 로그인 알림</span>
+                        </div>
+                    </div>
+                    <div class="alert-item warning">
+                        <span>🟡</span>
+                        <div>
+                            <strong>GitHub 토큰 노출 — 재발급 필요</strong><br>
+                            <span style="color:var(--text-secondary);">보안상 현재 토큰 revoke 후 새 토큰 발급</span>
+                        </div>
+                    </div>
+                    <div class="alert-item info">
+                        <span>🔵</span>
+                        <div>
+                            <strong>AroundX 창업기업 모집 마감</strong><br>
+                            <span style="color:var(--text-secondary);">3/16 16:00 마감 — 최대 2억원 사업화 자금</span>
+                        </div>
+                    </div>
+                    <div class="alert-item info">
+                        <span>🔵</span>
+                        <div>
+                            <strong>특허기반 사업화 R&D 설명회</strong><br>
+                            <span style="color:var(--text-secondary);">3/17 14:00 한국발명진흥회 — 최대 5억원</span>
+                        </div>
+                    </div>
+                    <div class="alert-item info">
+                        <span>🔵</span>
+                        <div>
+                            <strong>Claude Code 업데이트</strong><br>
+                            <span style="color:var(--text-secondary);">3/20 — channels, scheduled tasks 등 신기능</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <div class="section-title"><h3>💬 Slack AI 브리핑</h3></div>
+                        <div class="slack-msg">
+                            <div class="msg-header">
+                                <span>#일반 — 정동수</span>
+                                <span>3/22 08:19</span>
+                            </div>
+                            <div class="msg-body">
+                                <strong>Top 5:</strong> 트럼프 AI 입법 프레임워크 · Mamba-3 오픈소스 · AMI Labs $10.3억 시드 · Pentagon-Anthropic 합의 · EU AI법 간소화
+                            </div>
+                        </div>
+                        <div class="slack-msg">
+                            <div class="msg-header">
+                                <span>#일반 — 정동수</span>
+                                <span>3/21 자동 브리핑</span>
+                            </div>
+                            <div class="msg-body">
+                                <strong>Key:</strong> 글로벌 VC K-shaped 양극화 · Meta AI $1,150억 투자 vs 15,000명 감원 · 에이전틱 AI 전 산업 확산
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column: Projects & Email -->
+        <div class="two-col">
+            <div class="chart-container">
+                <div class="section-title">
+                    <h3>🔥 주간 프로젝트 트래커</h3>
+                </div>
+                <div class="scroll-area" id="projectTracker">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-title">
+                    <h3>📧 주요 이메일 (중요/액션)</h3>
+                </div>
+                <div class="scroll-area" id="emailList">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Weekly Command Center &middot; 정동수 · 별의문 Inc. &middot; Auto-generated 2026-03-22 &middot; Powered by Cowork
+        </div>
+    </div>
+
+    <script>
+    // ========== DATA ==========
+    const COLORS = ['#6c5ce7','#00cec9','#fdcb6e','#e17055','#00b894','#0984e3','#d63031','#a29bfe'];
+
+    const TASKS = [
+        { name: '반복 작업 인벤토리 작성', area: '효율화', source: 'Notion', status: 'active' },
+        { name: '체크리스트 템플릿 통합', area: '효율화', source: 'Notion', status: 'active' },
+        { name: '단축키/스니펫 10개 선정', area: '효율화', source: 'Notion', status: 'active' },
+        { name: '리드 소스 실험 2개 세팅', area: '수익화', source: 'Notion', status: 'active' },
+        { name: '오퍼 3종 정의(가치/가격/보장)', area: '수익화', source: 'Notion', status: 'active' },
+        { name: '주간 리뷰 15분 슬롯 캘린더 고정', area: '최적화', source: 'Notion', status: 'active' },
+        { name: '메시지 3줄 포맷 확정', area: '소통화', source: 'Notion', status: 'active' },
+        { name: 'Stripe 계정 셋업 완료', area: '수익화', source: 'Gmail', status: 'active' },
+        { name: 'Perplexity 크레딧 충전', area: '효율화', source: 'Gmail', status: 'active' },
+        { name: 'GitHub 토큰 재발급', area: '보안', source: 'System', status: 'waiting' },
+    ];
+
+    const CALENDAR = {
+        '3/16 월': [
+            { time: '07:00', title: '모닝 리딩 + Drive 레퍼런스 정리', cat: 'study' },
+            { time: '09:30', title: '전자책 W3: KDP 영문 목차 + 서문', cat: 'deepwork' },
+            { time: '13:00', title: '점심 + 휴식', cat: 'routine' },
+            { time: '15:00', title: '🚨 AroundX 모집 마감 (16:00)', cat: 'meeting' },
+            { time: '16:00', title: 'Drive 강의 폴더 구조 정리', cat: 'admin' },
+            { time: '18:15', title: '수업 준비 집중 (딥워크)', cat: 'deepwork' },
+            { time: '20:00', title: 'UrbanVision 환경 셋업', cat: 'deepwork' },
+            { time: '21:00', title: 'GPTers AI 스터디 (Zoom)', cat: 'meeting' },
+        ],
+        '3/17 화': [
+            { time: '06:30', title: '기상루틴 + 오늘 계획', cat: 'routine' },
+            { time: '07:30', title: '🔥 딥워크1: 세무사 3곳 컨택 (#2 법인세)', cat: 'deepwork' },
+            { time: '09:00', title: '연구실 세팅', cat: 'admin' },
+            { time: '10:00', title: '수업 준비 딥워크 + 전자책 Ch.1-3 + 크몽 Legal AI', cat: 'deepwork' },
+            { time: '13:00', title: '🔥 에어비앤비 리스팅 검토 (#4)', cat: 'deepwork' },
+            { time: '14:00', title: '🔬 특허 사업화 R&D 설명회 (오프라인)', cat: 'meeting' },
+            { time: '15:00', title: '홈택스 부가세 확인 + 나라장터 API', cat: 'admin' },
+            { time: '17:00', title: '운동 (7,000보+)', cat: 'routine' },
+            { time: '21:00', title: 'GPTers 커리어 전환 부스트 (Zoom)', cat: 'meeting' },
+        ],
+        '3/18 수': [
+            { time: '06:30', title: '기상루틴 + 오늘 계획', cat: 'routine' },
+            { time: '07:30', title: '🔥 크몽 Tech+수학PPT (#5) + 전자책 리드', cat: 'deepwork' },
+            { time: '10:00', title: '수업 준비 + 대성 강사 지원서 (#3) + 전자책 Ch.4-6', cat: 'deepwork' },
+            { time: '13:00', title: '🔥 에어비앤비 리스팅 공개 (#4)', cat: 'deepwork' },
+            { time: '14:00', title: 'Colab 노트북 Drive 업로드', cat: 'admin' },
+            { time: '15:30', title: '세무사 견적 비교 + 최종 선정 (#2)', cat: 'admin' },
+            { time: '17:00', title: '운동 (7,000보+)', cat: 'routine' },
+            { time: '20:00', title: 'UrbanVision API 레퍼런스 정리', cat: 'study' },
+        ],
+        '3/19 목': [
+            { time: '06:30', title: '기상루틴 + 오늘 계획', cat: 'routine' },
+            { time: '07:30', title: '🔥 대성 포트폴리오 1장 (#3)', cat: 'deepwork' },
+            { time: '10:00', title: '수업 준비 + KIPRIS API + 전자책 Ch.7-9 + 박사논문 데이터', cat: 'deepwork' },
+            { time: '13:00', title: '세무사 계약 (#2) + 결혼 예산 (#7)', cat: 'admin' },
+            { time: '14:00', title: 'Drive KDP 구조 정비', cat: 'admin' },
+            { time: '15:00', title: 'UrbanVision MVP (#6) + 유튜브 컨셉 (#10)', cat: 'deepwork' },
+            { time: '17:00', title: '운동 (7,000보+)', cat: 'routine' },
+            { time: '20:00', title: 'UrbanVision API 개발', cat: 'deepwork' },
+        ],
+        '3/20 금': [],
+        '3/21 토': [],
+        '3/22 일': [],
+    };
+
+    const PROJECTS = [
+        { id: '#1', name: '박사논문 데이터셋', events: 1, status: '리서치', color: '#6c5ce7' },
+        { id: '#2', name: '법인세 신고', events: 4, status: '진행중', color: '#d63031' },
+        { id: '#3', name: '대성 강사 지원', events: 2, status: '초안 작성', color: '#00b894' },
+        { id: '#4', name: '에어비앤비/WeHome', events: 3, status: '리스팅 공개', color: '#e17055' },
+        { id: '#5', name: '크몽 디지털 상품', events: 2, status: '등록 진행', color: '#fdcb6e' },
+        { id: '#6', name: 'UrbanVision MVP', events: 3, status: 'API 개발', color: '#0984e3' },
+        { id: '#7', name: '결혼 예산', events: 1, status: '초안', color: '#a29bfe' },
+        { id: '#9', name: '나라장터 API', events: 1, status: '신청', color: '#00cec9' },
+        { id: '#10', name: '유튜브 채널', events: 1, status: '컨셉 설계', color: '#636e72' },
+        { id: 'KDP', name: '전자책 (EdTech Rev)', events: 4, status: 'Part 1-3 집필', color: '#e17055' },
+    ];
+
+    const EMAILS = [
+        { from: 'Perplexity', subject: "You're out of credits", date: '3/22', important: true },
+        { from: 'Stripe', subject: "Unrecognized device signed in", date: '3/21', important: true },
+        { from: 'Perplexity', subject: "Your credits are running low", date: '3/21', important: true },
+        { from: 'Stripe', subject: "Start setting up your Stripe account", date: '3/20', important: true },
+        { from: 'Claude Team', subject: "New: Claude Code channels, scheduled tasks, and more", date: '3/20', important: true },
+        { from: 'LeanX', subject: "항상 승리하는 창업자의 7가지 습관", date: '3/21', important: false },
+        { from: 'Kimi', subject: "Payments now powered by Stripe", date: '3/20', important: false },
+        { from: 'Medium', subject: "Production-Ready RAG System Architecture", date: '3/21', important: false },
+        { from: 'Zapier', subject: "We trained 70 marketers on Cursor, want in?", date: '3/20', important: false },
+        { from: 'WordPress', subject: "🏆 첫 번째 글을 축하합니다!", date: '3/20', important: false },
+        { from: 'MarketScreener', subject: "Weekly market update - Oil slick", date: '3/20', important: false },
+        { from: 'Semrush', subject: "Agentic search", date: '3/20', important: false },
+    ];
+
+    // ========== CHARTS ==========
+
+    // Time Block Chart (Stacked Bar)
+    const days = ['3/16 월','3/17 화','3/18 수','3/19 목'];
+    const categories = {
+        deepwork: { label: '딥워크/수업준비', color: '#6c5ce7' },
+        study: { label: '학습/리딩', color: '#00cec9' },
+        meeting: { label: '미팅/설명회', color: '#d63031' },
+        admin: { label: '행정/정리', color: '#fdcb6e' },
+        routine: { label: '루틴(운동/식사)', color: '#636e72' },
+    };
+
+    // Hours per category per day (approximate from calendar)
+    const timeData = {
+        deepwork: [9.5, 9, 8.5, 9],
+        study:    [2.5, 0.75, 2, 0],
+        meeting:  [3, 4, 0, 0],
+        admin:    [2.5, 3, 3.5, 4.5],
+        routine:  [2, 2, 2, 2],
+    };
+
+    new Chart(document.getElementById('timeBlockChart'), {
+        type: 'bar',
+        data: {
+            labels: days,
+            datasets: Object.entries(categories).map(([key, val]) => ({
+                label: val.label,
+                data: timeData[key],
+                backgroundColor: val.color + 'CC',
+                borderRadius: 3,
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#8b8fa3', usePointStyle: true, padding: 12, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}h`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { display: false },
+                    ticks: { color: '#8b8fa3', font: { size: 11 } }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    max: 20,
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: {
+                        color: '#8b8fa3',
+                        font: { size: 11 },
+                        callback: v => v + 'h'
+                    }
+                }
+            }
+        }
+    });
+
+    // Task Area Doughnut
+    const areaCounts = { '효율화': 3, '수익화': 3, '최적화': 1, '소통화': 1, '보안/기타': 2 };
+    new Chart(document.getElementById('taskAreaChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(areaCounts),
+            datasets: [{
+                data: Object.values(areaCounts),
+                backgroundColor: ['#0984e3CC','#fdcb6eCC','#00b894CC','#e17055CC','#636e72CC'],
+                borderColor: '#1a1d28',
+                borderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#8b8fa3', usePointStyle: true, padding: 10, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                            return `${ctx.label}: ${ctx.parsed} (${((ctx.parsed/total)*100).toFixed(0)}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // ========== CALENDAR VIEW ==========
+    const dayToggle = document.getElementById('dayToggle');
+    const calView = document.getElementById('calendarView');
+    const dayKeys = Object.keys(CALENDAR);
+
+    dayKeys.forEach((day, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'day-btn' + (i === 0 ? ' active' : '');
+        if (day === '3/22 일') btn.classList.add('today');
+        btn.textContent = day;
+        btn.onclick = () => {
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCalendar(day);
+        };
+        dayToggle.appendChild(btn);
+    });
+
+    function renderCalendar(day) {
+        const events = CALENDAR[day];
+        if (!events || events.length === 0) {
+            calView.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">캘린더 데이터 미수집 (금~일)</div>';
+            return;
+        }
+        calView.innerHTML = events.map(e => `
+            <div class="event-item">
+                <span class="event-time">${e.time}</span>
+                <span class="event-title">${e.title}</span>
+                <span class="event-tag tag-${e.cat}">${e.cat === 'deepwork' ? '딥워크' : e.cat === 'study' ? '학습' : e.cat === 'meeting' ? '미팅' : e.cat === 'admin' ? '행정' : '루틴'}</span>
+            </div>
+        `).join('');
+    }
+
+    renderCalendar('3/16 월');
+
+    // ========== PROJECT TRACKER ==========
+    const projEl = document.getElementById('projectTracker');
+    projEl.innerHTML = PROJECTS.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div style="width:4px;height:30px;border-radius:2px;background:${p.color};"></div>
+            <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;">${p.id} ${p.name}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">이벤트 ${p.events}개 · ${p.status}</div>
+            </div>
+            <div style="font-size:20px;font-weight:800;color:${p.color};">${p.events}</div>
+        </div>
+    `).join('');
+
+    // ========== EMAIL LIST ==========
+    const emailEl = document.getElementById('emailList');
+    emailEl.innerHTML = EMAILS.map(e => `
+        <div class="email-summary">
+            <span class="email-from">${e.important ? '⭐ ' : ''}${e.from}</span>
+            <span class="email-subject">${e.subject}</span>
+            <span class="email-date">${e.date}</span>
+        </div>
+    `).join('');
+
+    </script>
+</body>
+</html>

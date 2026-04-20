@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stargate AI HTML Gallery</title>
+<meta name="description" content="Stargate Corporation · AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 모음">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#0a0e27 0%,#151933 100%);
+  color:#e0e6f0;padding:24px;min-height:100vh;line-height:1.5}
+h1{color:#8ab4f8;font-size:28px;margin-bottom:6px;letter-spacing:-.3px}
+.sub{color:#8892b0;font-size:13px;margin-bottom:18px}
+.sub b{color:#e0e6f0}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0;padding:14px;
+  background:#151933;border:1px solid #2a3354;border-radius:10px;align-items:center}
+.toolbar input,.toolbar select{background:#0a0e27;color:#e0e6f0;
+  border:1px solid #2a3354;border-radius:6px;padding:9px 12px;font-size:13px;
+  font-family:inherit;outline:none}
+.toolbar input{flex:1;min-width:220px}
+.toolbar input:focus,.toolbar select:focus{border-color:#8ab4f8}
+.toolbar label{color:#8892b0;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 22px}
+.chip{background:#1e2547;border:1px solid #2a3354;color:#b4c2f5;
+  font-size:12px;padding:5px 11px;border-radius:14px;cursor:pointer;user-select:none;
+  transition:.15s}
+.chip.active{background:#4a6fdc;color:#fff;border-color:#6b8ddc}
+.chip:hover{border-color:#8ab4f8}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:#151933;border:1px solid #2a3354;border-radius:10px;
+  overflow:hidden;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.card:hover{transform:translateY(-4px);border-color:#8ab4f8;
+  box-shadow:0 8px 24px rgba(138,180,248,.15)}
+.card img{width:100%;height:160px;object-fit:cover;object-position:top;
+  display:block;background:#fff}
+.noimg{width:100%;height:160px;background:#2a3354;display:flex;
+  align-items:center;justify-content:center;color:#6b8ddc;font-size:12px}
+.meta{padding:12px}
+.meta .cat{font-size:10px;color:#8ab4f8;margin-bottom:4px;letter-spacing:.3px}
+.meta h3{font-size:13px;margin-bottom:4px;color:#e0e6f0;
+  word-break:break-all;line-height:1.3}
+.meta p{font-size:11px;color:#8892b0;word-break:break-all}
+a{text-decoration:none;color:inherit}
+#hint{color:#6b8ddc;font-size:13px;padding:20px;text-align:center;display:none}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid #2a3354;
+  color:#6b7390;font-size:11px;text-align:center}
+footer a{color:#8ab4f8}
+</style>
+</head>
+<body>
+<h1>Stargate AI HTML Gallery</h1>
+<div class="sub">AI로 생성한 HTML 자산 아카이브 · 총 <b id="total">0</b>건 · 카테고리 <b id="catCnt">0</b>개 · 업데이트 2026-04-20</div>
+
+<div class="toolbar">
+<input id="q" type="text" placeholder="파일명·카테고리·원본 경로 검색...">
+<label>정렬</label>
+<select id="sort">
+<option value="cat">카테고리</option>
+<option value="name">파일명</option>
+<option value="mt_desc">수정일 ↓</option>
+<option value="mt_asc">수정일 ↑</option>
+<option value="size_desc">크기 ↓</option>
+</select>
+<label>폴더</label>
+<select id="tag">
+<option value="">전체</option>
+<option value="스타게이트(6GB)">스타게이트(6GB)</option>
+<option value="개인 자료(30GB)">개인 자료(30GB)</option>
+</select>
+</div>
+
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<div id="hint">조건에 맞는 파일이 없습니다.</div>
+
+<footer>
+© Stargate Corporation · <a href="https://github.com/" target="_blank">GitHub</a> · AI 생성 HTML 아카이브
+</footer>
+
+<script>
+fetch('data.json').then(r=>r.json()).then(DATA=>{
+  document.getElementById('total').textContent = DATA.length;
+  const cats = [...new Set(DATA.map(d=>d.cat))].sort();
+  document.getElementById('catCnt').textContent = cats.length;
+  const chipsEl = document.getElementById('chips');
+  let activeCats = new Set();
+  const allChip = document.createElement('span');
+  allChip.className='chip active'; allChip.textContent='전체 ('+DATA.length+')';
+  allChip.onclick=()=>{activeCats.clear();document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));allChip.classList.add('active');render();};
+  chipsEl.appendChild(allChip);
+  cats.forEach(c=>{
+    const n = DATA.filter(d=>d.cat===c).length;
+    const el = document.createElement('span');
+    el.className='chip'; el.textContent=c+' ('+n+')';
+    el.onclick=()=>{
+      if(activeCats.has(c)){activeCats.delete(c);el.classList.remove('active');}
+      else{activeCats.add(c);el.classList.add('active');}
+      allChip.classList.toggle('active', activeCats.size===0);
+      render();
+    };
+    chipsEl.appendChild(el);
+  });
+  function render(){
+    const q = document.getElementById('q').value.toLowerCase();
+    const sort = document.getElementById('sort').value;
+    const tag = document.getElementById('tag').value;
+    let list = DATA.filter(d=>{
+      if(activeCats.size && !activeCats.has(d.cat)) return false;
+      if(tag && d.tag!==tag) return false;
+      if(q && !(d.name.toLowerCase().includes(q) || d.orig.toLowerCase().includes(q) || d.cat.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+    else if(sort==='mt_desc') list.sort((a,b)=>b.mt.localeCompare(a.mt));
+    else if(sort==='mt_asc') list.sort((a,b)=>a.mt.localeCompare(b.mt));
+    else if(sort==='size_desc') list.sort((a,b)=>parseFloat(b.sz)-parseFloat(a.sz));
+    else list.sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
+    const grid = document.getElementById('grid');
+    grid.innerHTML = list.map(d=>{
+      const img = d.thumb? '<img src="files/'+d.thumb+'" loading="lazy" onerror="this.outerHTML=\\'<div class=noimg>썸네일 없음</div>\\'">' : '<div class="noimg">썸네일 없음</div>';
+      return '<a class="card" href="files/'+d.html+'" target="_blank">'+img+
+        '<div class="meta"><div class="cat">'+d.cat+' · '+d.mt+' · '+d.sz+'KB</div>'+
+        '<h3>'+escapeHtml(d.name)+'</h3><p>'+escapeHtml(d.orig)+'</p></div></a>';
+    }).join('');
+    document.getElementById('hint').style.display = list.length? 'none':'block';
+  }
+  function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  document.getElementById('q').addEventListener('input', render);
+  document.getElementById('sort').addEventListener('change', render);
+  document.getElementById('tag').addEventListener('change', render);
+  render();
+});
+</script>
+</body>
+</html>

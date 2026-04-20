@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stargate Corporation - Business Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #e8e5e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    width: 540px;
+    height: 310px;
+    background: #ffffff;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.04),
+      0 8px 30px rgba(0,0,0,0.06),
+      0 30px 60px rgba(0,0,0,0.03);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.04),
+      0 12px 40px rgba(0,0,0,0.08),
+      0 40px 80px rgba(0,0,0,0.04);
+  }
+
+  /* Left accent bar */
+  .accent-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, #1a1a2e, #3d2c6e, #1a1a2e);
+  }
+
+  /* Star mark */
+  .star-mark {
+    position: absolute;
+    top: 34px;
+    right: 36px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .star-mark::before,
+  .star-mark::after {
+    content: '';
+    position: absolute;
+    background: #1a1a2e;
+  }
+
+  .star-mark::before {
+    top: 50%; left: 50%;
+    width: 1.5px; height: 28px;
+    transform: translate(-50%, -50%);
+  }
+
+  .star-mark::after {
+    top: 50%; left: 50%;
+    width: 28px; height: 1.5px;
+    transform: translate(-50%, -50%);
+  }
+
+  .star-mark .d1,
+  .star-mark .d2 {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1.5px; height: 20px;
+    background: #1a1a2e;
+  }
+
+  .d1 { transform: translate(-50%, -50%) rotate(45deg); }
+  .d2 { transform: translate(-50%, -50%) rotate(-45deg); }
+
+  /* Content layout */
+  .content {
+    padding: 34px 38px 32px 42px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .company-kr {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #1a1a2e;
+    letter-spacing: 3px;
+  }
+
+  /* Bottom area: left info + right QR */
+  .bottom-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .left-block {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: #1a1a2e;
+    line-height: 1;
+  }
+
+  .title-text {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 4px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .sep {
+    width: 32px;
+    height: 1px;
+    background: #ddd;
+    margin: 14px 0 12px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+
+  .info-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #bbb;
+    text-align: right;
+  }
+
+  .info-value {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 10.5px;
+    color: #444;
+    letter-spacing: 0.3px;
+  }
+
+  .en-biz {
+    margin-top: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    font-size: 8px;
+    color: #ccc;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* QR Code area */
+  .qr-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 24px;
+    flex-shrink: 0;
+  }
+
+  .qr-box {
+    width: 90px;
+    height: 90px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Placeholder QR pattern */
+  .qr-placeholder {
+    width: 68px;
+    height: 68px;
+    position: relative;
+  }
+
+  .qr-placeholder svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .qr-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 7px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 600px) {
+    .card { width: 94vw; height: auto; min-height: 290px; }
+    .content { padding: 26px 26px 26px 32px; }
+    .name { font-size: 20px; }
+    .qr-box { width: 74px; height: 74px; }
+    .qr-placeholder { width: 54px; height: 54px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="label">02 — Neo-Minimal · Single Side</div>
+
+<div class="card">
+  <div class="accent-bar"></div>
+
+  <div class="star-mark">
+    <div class="d1"></div>
+    <div class="d2"></div>
+  </div>
+
+  <div class="content">
+    <div class="company-kr">별의문</div>
+
+    <div class="bottom-area">
+      <div class="left-block">
+        <div class="name">박동수</div>
+        <div class="title-text">대표이사 · CEO</div>
+
+        <div class="sep"></div>
+
+        <div class="info-grid">
+          <span class="info-label">Tel</span>
+          <span class="info-value">070-8018-8227</span>
+          <span class="info-label">Email</span>
+          <span class="info-value">ceo@stargate.co.kr</span>
+          <span class="info-label">Web</span>
+          <span class="info-value">www.stargate.co.kr</span>
+          <span class="info-label">Addr</span>
+          <span class="info-value">서울특별시 강남구 대치동</span>
+        </div>
+
+        <div class="en-biz">Stargate Corp · AI Software · EdTech · E-Publishing</div>
+      </div>
+
+      <div class="qr-area">
+        <div class="qr-box">
+          <div class="qr-placeholder">
+            <svg viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Top-left finder -->
+              <rect x="2" y="2" width="18" height="18" rx="2" stroke="#1a1a2e" stroke-width="2.5" fill="none"/>
+              <rect x="6" y="6" width="10" height="10" rx="1" fill="#1a1a2e"/>
+              <!-- Top-right finder -->
+              <rect x="48" y="2" width="18" height="18" rx="2" stroke="#1a1a2e" stroke-width="2.5" fill="none"/>
+              <rect x="52" y="6" width="10" height="10" rx="1" fill="#1a1a2e"/>
+              <!-- Bottom-left finder -->
+              <rect x="2" y="48" width="18" height="18" rx="2" stroke="#1a1a2e" stroke-width="2.5" fill="none"/>
+              <rect x="6" y="52" width="10" height="10" rx="1" fill="#1a1a2e"/>
+              <!-- Data modules (decorative) -->
+              <rect x="24" y="4" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="30" y="4" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="36" y="4" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="24" y="10" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="36" y="10" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="30" y="10" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="24" y="16" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="30" y="16" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+
+              <rect x="4" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="10" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="16" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="24" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.7"/>
+              <rect x="30" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="36" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="42" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="48" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="60" y="24" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+
+              <rect x="4" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="16" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="24" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="30" y="30" width="8" height="8" rx="1" fill="#3d2c6e" opacity="0.5"/>
+              <rect x="42" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="54" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="60" y="30" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+
+              <rect x="4" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="10" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="16" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="24" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="42" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="48" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="54" y="36" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+
+              <rect x="24" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="30" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="36" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="42" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="48" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="60" y="42" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+
+              <rect x="24" y="48" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="36" y="48" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="48" y="48" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="54" y="48" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="60" y="48" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+
+              <rect x="24" y="54" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="30" y="54" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="42" y="54" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+              <rect x="48" y="54" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="54" y="54" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+
+              <rect x="24" y="60" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.6"/>
+              <rect x="36" y="60" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.3"/>
+              <rect x="42" y="60" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.5"/>
+              <rect x="60" y="60" width="4" height="4" rx="0.5" fill="#1a1a2e" opacity="0.4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="qr-label">Scan Me</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

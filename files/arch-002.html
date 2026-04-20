@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>카카오톡 AI 이미지 분석 시스템 아키텍처</title>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #8B5CF6;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --bg-light: #F8FAFC;
+            --bg-white: #FFFFFF;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        /* Smooth scrolling for all */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Touch-friendly tap targets */
+        a, button, .arch-box, .flow-card, .component-card {
+            min-height: 44px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.9);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Navigation */
+        .nav {
+            background: var(--bg-white);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Sections */
+        section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* Architecture Diagram */
+        .architecture-container {
+            background: var(--bg-white);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            overflow-x: auto;
+        }
+
+        .architecture {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            min-width: 800px;
+        }
+
+        /* Mobile Vertical Flow - Hidden on desktop */
+        .architecture-mobile {
+            display: none;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .architecture-mobile {
+                display: block;
+            }
+
+            .architecture-desktop {
+                display: none !important;
+            }
+        }
+
+        /* Vertical Flow Styles */
+        .vertical-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .flow-step {
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25rem 1rem;
+            border-radius: 1rem;
+            background: var(--bg-white);
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .flow-node:active {
+            transform: scale(0.98);
+        }
+
+        .flow-node .node-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-node .node-label {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .flow-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            padding: 0 0.5rem;
+            line-height: 1.4;
+        }
+
+        /* Flow Node Colors */
+        .flow-node.user {
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            border-color: #94A3B8;
+        }
+
+        .flow-node.bluestack {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border-color: #2196F3;
+        }
+
+        .flow-node.watcher {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-color: #4CAF50;
+        }
+
+        .flow-node.bridge {
+            background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+            border-color: #9C27B0;
+        }
+
+        .flow-node.gemini {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            border-color: #FF9800;
+        }
+
+        /* Flow Connector */
+        .flow-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+            position: relative;
+        }
+
+        .flow-connector .connector-line {
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 2px;
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-connector.parallel {
+            padding: 0.75rem 0;
+        }
+
+        .flow-connector.parallel .parallel-label {
+            font-size: 0.7rem;
+            background: var(--secondary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+
+        .flow-connector.parallel .connector-line {
+            height: 15px;
+        }
+
+        .arch-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .arch-box {
+            background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-light) 100%);
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            min-width: 160px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .arch-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary);
+        }
+
+        .arch-box.bluestack {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border-color: #2196F3;
+        }
+
+        .arch-box.bridge {
+            background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+            border-color: #9C27B0;
+        }
+
+        .arch-box.gemini {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            border-color: #FF9800;
+        }
+
+        .arch-box.watcher {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-color: #4CAF50;
+        }
+
+        .arch-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .arch-label {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .arch-sublabel {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Arrows */
+        .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            min-width: 60px;
+        }
+
+        .arrow-down {
+            font-size: 2rem;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(10px); }
+            60% { transform: translateY(5px); }
+        }
+
+        /* Flow Steps */
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .flow-card {
+            background: var(--bg-white);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-card::before {
+            content: attr(data-step);
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 3rem;
+            font-weight: 800;
+            color: rgba(59, 130, 246, 0.1);
+        }
+
+        .flow-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .flow-card h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .flow-card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Components Section */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .component-card {
+            background: var(--bg-white);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.4s ease;
+        }
+
+        .component-card:hover {
+            transform: translateY(-8px) rotateX(2deg);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .component-header {
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .component-header.blue { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+        .component-header.purple { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+        .component-header.green { background: linear-gradient(135deg, #10B981, #059669); }
+        .component-header.orange { background: linear-gradient(135deg, #F59E0B, #D97706); }
+
+        .component-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .component-body {
+            padding: 1.5rem;
+        }
+
+        .component-body ul {
+            list-style: none;
+        }
+
+        .component-body li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .component-body li:last-child {
+            border-bottom: none;
+        }
+
+        .component-body li::before {
+            content: '→';
+            color: var(--primary);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border: 4px solid var(--bg-white);
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            transform: translateX(-6px);
+        }
+
+        .timeline-item:hover::before {
+            transform: translateX(-6px) scale(1.3);
+            background: var(--secondary);
+        }
+
+        .timeline-content {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover .timeline-content {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .timeline-content h4 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #1E293B;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.875rem;
+            color: #E2E8F0;
+            line-height: 1.8;
+        }
+
+        .code-comment { color: #64748B; }
+        .code-string { color: #A5D6FF; }
+        .code-keyword { color: #FF7B72; }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--text-dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            max-width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Responsive - Tablet */
+        @media (max-width: 1024px) {
+            .architecture-container {
+                padding: 1.5rem;
+            }
+
+            .arch-box {
+                min-width: 140px;
+                padding: 1rem;
+            }
+
+            .component-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Responsive - Mobile */
+        @media (max-width: 768px) {
+            .hero {
+                min-height: 50vh;
+                padding: 2rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 1.75rem;
+                line-height: 1.3;
+            }
+
+            .hero p {
+                font-size: 1rem;
+                padding: 0 0.5rem;
+            }
+
+            .hero-badges {
+                gap: 0.5rem;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .nav {
+                padding: 0.75rem 1rem;
+                gap: 0.5rem;
+                justify-content: flex-start;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav a {
+                font-size: 0.875rem;
+                padding: 0.4rem 0.75rem;
+                white-space: nowrap;
+            }
+
+            section {
+                padding: 2rem 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.9rem;
+            }
+
+            /* Mobile Architecture - Use vertical flow only */
+            .architecture-desktop {
+                display: none !important;
+            }
+
+            .architecture-mobile {
+                display: block !important;
+            }
+
+            /* Mobile Flow Cards */
+            .flow-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .flow-card {
+                padding: 1.25rem;
+            }
+
+            .flow-card::before {
+                font-size: 2.5rem;
+                top: 0.75rem;
+                right: 0.75rem;
+            }
+
+            .flow-card h3 {
+                font-size: 1rem;
+            }
+
+            .flow-card p {
+                font-size: 0.8rem;
+            }
+
+            /* Mobile Components Grid */
+            .components-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .component-header {
+                padding: 1rem;
+            }
+
+            .component-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .component-body {
+                padding: 1rem;
+            }
+
+            .component-body li {
+                font-size: 0.85rem;
+                padding: 0.4rem 0;
+            }
+
+            /* Mobile Timeline */
+            .timeline {
+                padding-left: 1.5rem;
+            }
+
+            .timeline-item {
+                padding-left: 1.5rem;
+                padding-bottom: 1.5rem;
+            }
+
+            .timeline-item::before {
+                left: -1.5rem;
+                width: 12px;
+                height: 12px;
+                transform: translateX(-4px);
+            }
+
+            .timeline-content {
+                padding: 1rem;
+            }
+
+            .timeline-content h4 {
+                font-size: 0.95rem;
+            }
+
+            .timeline-content p {
+                font-size: 0.8rem;
+            }
+
+            .code-block {
+                padding: 1rem;
+                border-radius: 0.5rem;
+            }
+
+            .code-block code {
+                font-size: 0.7rem;
+                line-height: 1.6;
+            }
+
+            /* Mobile Footer */
+            footer {
+                padding: 1.5rem 1rem;
+            }
+
+            footer p {
+                font-size: 0.9rem;
+            }
+
+            /* Disable 3D hover on mobile (performance) */
+            .component-card:hover {
+                transform: translateY(-4px);
+            }
+
+            .arch-box:hover {
+                transform: translateY(-4px);
+            }
+
+            /* Touch-friendly tooltip alternative */
+            .tooltip {
+                display: none;
+            }
+
+            /* IMPORTANT: Disable fade-in on mobile - show content immediately */
+            .fade-in {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            /* Ensure all sections are visible on mobile */
+            section {
+                visibility: visible !important;
+            }
+
+            .flow-container {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+            }
+
+            .components-grid {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+            }
+
+            .timeline {
+                display: block !important;
+            }
+
+            .flow-card,
+            .component-card,
+            .timeline-item,
+            .timeline-content {
+                opacity: 1 !important;
+                transform: none !important;
+                visibility: visible !important;
+            }
+        }
+
+        /* Responsive - Small Mobile */
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+
+            .hero p {
+                font-size: 0.9rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .arch-box {
+                max-width: 240px;
+            }
+
+            .code-block code {
+                font-size: 0.65rem;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Interactive Highlight */
+        .highlight-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>🖼️ 카카오톡 AI 이미지 분석 시스템</h1>
+            <p>BlueStacks 에뮬레이터를 활용한 카카오톡 이미지 자동 분석 아키텍처</p>
+            <div class="hero-badges">
+                <span class="badge">🤖 AI Vision</span>
+                <span class="badge">📱 BlueStacks</span>
+                <span class="badge">🔗 Bridge Server</span>
+                <span class="badge">⚡ Real-time</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="#architecture">아키텍처</a>
+        <a href="#flow">데이터 흐름</a>
+        <a href="#components">구성요소</a>
+        <a href="#sequence">시퀀스</a>
+    </nav>
+
+    <!-- Architecture Section -->
+    <section id="architecture">
+        <h2 class="section-title">시스템 아키텍처</h2>
+        <p class="section-subtitle">클릭하여 각 구성요소의 상세 정보를 확인하세요</p>
+
+        <!-- Mobile: Purely Vertical Flow -->
+        <div class="architecture-mobile">
+            <div class="vertical-flow">
+                <div class="flow-step">
+                    <div class="flow-node user">
+                        <span class="node-icon">👤</span>
+                        <span class="node-label">사용자</span>
+                    </div>
+                    <div class="flow-desc">이미지 전송</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node bluestack">
+                        <span class="node-icon">💬</span>
+                        <span class="node-label">카카오톡</span>
+                    </div>
+                    <div class="flow-desc">BlueStacks에서 이미지 수신 및 저장</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node bluestack">
+                        <span class="node-icon">🤖</span>
+                        <span class="node-label">MessengerBotR</span>
+                    </div>
+                    <div class="flow-desc">"사진을 보냈습니다" 알림 감지 → "분석 중..." 응답</div>
+                </div>
+
+                <div class="flow-connector parallel">
+                    <div class="connector-line"></div>
+                    <span class="parallel-label">동시 진행</span>
+                </div>
+
+                <div class="flow-step">
+                    <div class="flow-node watcher">
+                        <span class="node-icon">👁️</span>
+                        <span class="node-label">ADB Watcher</span>
+                    </div>
+                    <div class="flow-desc">새 이미지 감지 → 로컬로 다운로드</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node bridge">
+                        <span class="node-icon">🌉</span>
+                        <span class="node-label">Bridge Server</span>
+                    </div>
+                    <div class="flow-desc">이미지 수신 (POST /webhook/image)</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node gemini">
+                        <span class="node-icon">✨</span>
+                        <span class="node-label">Gemini API</span>
+                    </div>
+                    <div class="flow-desc">AI 비전으로 이미지 분석</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node bridge">
+                        <span class="node-icon">🌉</span>
+                        <span class="node-label">Bridge Server</span>
+                    </div>
+                    <div class="flow-desc">분석 결과 저장 및 캐싱</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node bluestack">
+                        <span class="node-icon">🔄</span>
+                        <span class="node-label">결과 폴링</span>
+                    </div>
+                    <div class="flow-desc">MessengerBotR이 GET /check-image-result 호출</div>
+                </div>
+
+                <div class="flow-connector"><div class="connector-line"></div><span>⬇</span></div>
+
+                <div class="flow-step">
+                    <div class="flow-node user">
+                        <span class="node-icon">💬</span>
+                        <span class="node-label">결과 전달</span>
+                    </div>
+                    <div class="flow-desc">카카오톡으로 분석 결과 전송!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop: Original Layout -->
+        <div class="architecture-container architecture-desktop">
+            <div class="architecture">
+                <!-- Row 1: User -->
+                <div class="arch-row">
+                    <div class="arch-box" data-tooltip="사용자가 카카오톡에서 이미지를 전송합니다">
+                        <div class="arch-icon">👤</div>
+                        <div class="arch-label">사용자</div>
+                        <div class="arch-sublabel">이미지 전송</div>
+                    </div>
+                </div>
+
+                <div class="arch-row">
+                    <div class="arrow-down">⬇️</div>
+                </div>
+
+                <!-- Row 2: BlueStacks -->
+                <div class="arch-row">
+                    <div class="arch-box bluestack" data-tooltip="Android 에뮬레이터로 카카오톡을 실행합니다">
+                        <div class="arch-icon">📱</div>
+                        <div class="arch-label">BlueStacks</div>
+                        <div class="arch-sublabel">Android 에뮬레이터</div>
+                    </div>
+                </div>
+
+                <div class="arch-row">
+                    <div class="arrow-down">⬇️</div>
+                </div>
+
+                <!-- Row 3: KakaoTalk & MessengerBotR -->
+                <div class="arch-row">
+                    <div class="arch-box bluestack" data-tooltip="카카오톡 앱 - 이미지를 수신하고 저장합니다">
+                        <div class="arch-icon">💬</div>
+                        <div class="arch-label">KakaoTalk</div>
+                        <div class="arch-sublabel">이미지 수신/저장</div>
+                    </div>
+                    <div class="arrow">↔️</div>
+                    <div class="arch-box bluestack highlight-pulse" data-tooltip="알림을 감지하고 브릿지 서버와 통신합니다">
+                        <div class="arch-icon">🤖</div>
+                        <div class="arch-label">MessengerBotR</div>
+                        <div class="arch-sublabel">알림 감지 & 응답</div>
+                    </div>
+                </div>
+
+                <div class="arch-row">
+                    <div class="arrow-down">⬇️</div>
+                    <div style="width: 200px;"></div>
+                    <div class="arrow-down">⬇️</div>
+                </div>
+
+                <!-- Row 4: ADB Watcher & Bridge -->
+                <div class="arch-row">
+                    <div class="arch-box watcher" data-tooltip="ADB로 이미지 폴더를 모니터링하고 새 이미지를 감지합니다">
+                        <div class="arch-icon">👁️</div>
+                        <div class="arch-label">ADB Watcher</div>
+                        <div class="arch-sublabel">이미지 폴더 모니터링</div>
+                    </div>
+                    <div class="arrow">➡️</div>
+                    <div class="arch-box bridge" data-tooltip="모든 통신을 중계하는 HTTP 서버 (Port 8787)">
+                        <div class="arch-icon">🌉</div>
+                        <div class="arch-label">Bridge Server</div>
+                        <div class="arch-sublabel">HTTP 중계 서버</div>
+                    </div>
+                    <div class="arrow">⬅️</div>
+                    <div style="width: 160px; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                        폴링 요청<br>/check-image-result
+                    </div>
+                </div>
+
+                <div class="arch-row">
+                    <div style="width: 200px;"></div>
+                    <div class="arrow-down">⬇️</div>
+                </div>
+
+                <!-- Row 5: Gemini API -->
+                <div class="arch-row">
+                    <div class="arch-box gemini" data-tooltip="Google Gemini API로 이미지를 분석합니다">
+                        <div class="arch-icon">✨</div>
+                        <div class="arch-label">Gemini API</div>
+                        <div class="arch-sublabel">이미지 분석 (Vision)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Flow Section -->
+    <section id="flow">
+        <h2 class="section-title">데이터 흐름</h2>
+        <p class="section-subtitle">이미지 전송부터 분석 결과 수신까지의 7단계 프로세스</p>
+
+        <div class="flow-container">
+            <div class="flow-card fade-in" data-step="1">
+                <h3>📤 이미지 전송</h3>
+                <p>사용자가 카카오톡으로 이미지를 전송합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="2">
+                <h3>💾 이미지 저장</h3>
+                <p>카카오톡이 이미지를 /sdcard/Pictures/KakaoTalk/ 폴더에 저장합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="3">
+                <h3>👁️ 이미지 감지</h3>
+                <p>ADB Watcher가 새 이미지를 감지하고 브릿지 서버로 전송합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="4">
+                <h3>🔔 알림 감지</h3>
+                <p>MessengerBotR이 "사진을 보냈습니다" 알림을 감지합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="5">
+                <h3>✨ AI 분석</h3>
+                <p>브릿지 서버가 Gemini API로 이미지를 분석합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="6">
+                <h3>🔄 결과 폴링</h3>
+                <p>MessengerBotR이 브릿지 서버에서 분석 결과를 폴링합니다.</p>
+            </div>
+            <div class="flow-card fade-in" data-step="7">
+                <h3>💬 결과 전달</h3>
+                <p>분석 결과가 카카오톡 채팅으로 전달됩니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Components Section -->
+    <section id="components">
+        <h2 class="section-title">구성 요소</h2>
+        <p class="section-subtitle">시스템을 구성하는 핵심 컴포넌트들</p>
+
+        <div class="components-grid">
+            <div class="component-card fade-in">
+                <div class="component-header blue">
+                    <h3>📱 BlueStacks</h3>
+                </div>
+                <div class="component-body">
+                    <ul>
+                        <li>Windows에서 실행되는 Android 에뮬레이터</li>
+                        <li>카카오톡 앱 실행 환경 제공</li>
+                        <li>ADB (Android Debug Bridge) 지원</li>
+                        <li>파일 시스템 접근 가능</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="component-card fade-in">
+                <div class="component-header blue">
+                    <h3>🤖 MessengerBotR</h3>
+                </div>
+                <div class="component-body">
+                    <ul>
+                        <li>Android 알림 리스너 기반 봇</li>
+                        <li>카카오톡 알림 감지 및 응답</li>
+                        <li>HTTP 요청으로 브릿지와 통신</li>
+                        <li>JavaScript 스크립트로 로직 구현</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="component-card fade-in">
+                <div class="component-header green">
+                    <h3>👁️ ADB Watcher</h3>
+                </div>
+                <div class="component-body">
+                    <ul>
+                        <li>Python 스크립트로 구현</li>
+                        <li>ADB로 BlueStacks 파일시스템 모니터링</li>
+                        <li>새 이미지 감지 시 자동 다운로드</li>
+                        <li>해시 기반 중복 방지</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="component-card fade-in">
+                <div class="component-header purple">
+                    <h3>🌉 Bridge Server</h3>
+                </div>
+                <div class="component-body">
+                    <ul>
+                        <li>Node.js HTTP 서버 (Port 8787)</li>
+                        <li>MessengerBotR ↔ AI API 중계</li>
+                        <li>이미지 분석 결과 캐싱</li>
+                        <li>폴링 엔드포인트 제공</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="component-card fade-in">
+                <div class="component-header orange">
+                    <h3>✨ Gemini API</h3>
+                </div>
+                <div class="component-body">
+                    <ul>
+                        <li>Google AI 이미지 분석 API</li>
+                        <li>gemini-2.0-flash 모델 사용</li>
+                        <li>Base64 이미지 입력 지원</li>
+                        <li>한국어 분석 결과 반환</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sequence Section -->
+    <section id="sequence">
+        <h2 class="section-title">시퀀스 다이어그램</h2>
+        <p class="section-subtitle">각 컴포넌트 간의 상세 통신 흐름</p>
+
+        <div class="timeline">
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>1. 이미지 수신</h4>
+                    <p>사용자 → 카카오톡: 이미지 전송</p>
+                    <p>카카오톡 → 파일시스템: /sdcard/Pictures/KakaoTalk/에 저장</p>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>2. 동시 감지</h4>
+                    <p>MessengerBotR: "사진을 보냈습니다" 알림 감지 → "분석 중..." 응답</p>
+                    <p>ADB Watcher: 새 파일 감지 → 로컬로 다운로드</p>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>3. 이미지 전송</h4>
+                    <p>ADB Watcher → Bridge: POST /webhook/image (Base64 이미지)</p>
+                    <div class="code-block">
+                        <code>
+<span class="code-comment">// 이미지 페이로드</span>
+{
+  <span class="code-string">"type"</span>: <span class="code-string">"image"</span>,
+  <span class="code-string">"imageBase64"</span>: <span class="code-string">"data:image/png;base64,..."</span>,
+  <span class="code-string">"filename"</span>: <span class="code-string">"1234567890.png"</span>
+}
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>4. AI 분석</h4>
+                    <p>Bridge → Gemini API: 이미지 분석 요청</p>
+                    <p>Gemini API → Bridge: 분석 결과 (한국어)</p>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>5. 결과 저장</h4>
+                    <p>Bridge: pendingImageResults Map에 결과 저장 (5분간 유지)</p>
+                    <div class="code-block">
+                        <code>
+<span class="code-comment">// 결과 캐싱</span>
+pendingImageResults.<span class="code-keyword">set</span>(<span class="code-string">"default"</span>, {
+  result: <span class="code-string">"📷 이미지 분석 결과: ..."</span>,
+  timestamp: Date.<span class="code-keyword">now</span>()
+});
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>6. 결과 폴링</h4>
+                    <p>MessengerBotR → Bridge: GET /check-image-result (3초 간격, 최대 30회)</p>
+                    <p>Bridge → MessengerBotR: { hasResult: true, result: "..." }</p>
+                </div>
+            </div>
+
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <h4>7. 결과 전달</h4>
+                    <p>MessengerBotR → 카카오톡: msg.reply(분석결과)</p>
+                    <p>카카오톡 → 사용자: 이미지 분석 결과 표시</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>📷 카카오톡 AI 이미지 분석 시스템 아키텍처</p>
+        <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+            Built with BlueStacks + MessengerBotR + Gemini Vision API
+        </p>
+    </footer>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Scroll Animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Tooltip
+        const tooltip = document.getElementById('tooltip');
+        const archBoxes = document.querySelectorAll('.arch-box[data-tooltip]');
+
+        archBoxes.forEach(box => {
+            box.addEventListener('mouseenter', (e) => {
+                const text = box.getAttribute('data-tooltip');
+                tooltip.textContent = text;
+                tooltip.classList.add('visible');
+            });
+
+            box.addEventListener('mousemove', (e) => {
+                tooltip.style.left = e.pageX + 15 + 'px';
+                tooltip.style.top = e.pageY + 15 + 'px';
+            });
+
+            box.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // GSAP Animations
+        gsap.from('.hero h1', { duration: 1, y: 50, opacity: 0, ease: 'power3.out' });
+        gsap.from('.hero p', { duration: 1, y: 30, opacity: 0, ease: 'power3.out', delay: 0.2 });
+        gsap.from('.hero-badges', { duration: 1, y: 20, opacity: 0, ease: 'power3.out', delay: 0.4 });
+
+        // Architecture Box Click Animation
+        archBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                gsap.to(box, {
+                    scale: 0.95,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: 'power2.inOut'
+                });
+            });
+        });
+
+        // Flow Card Stagger Animation on Scroll
+        const flowCards = document.querySelectorAll('.flow-card');
+        const flowObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                gsap.from(flowCards, {
+                    duration: 0.6,
+                    y: 30,
+                    opacity: 0,
+                    stagger: 0.1,
+                    ease: 'power2.out'
+                });
+                flowObserver.disconnect();
+            }
+        }, { threshold: 0.2 });
+
+        if (flowCards.length > 0) {
+            flowObserver.observe(flowCards[0].parentElement);
+        }
+
+        // Check if mobile device
+        const isMobile = window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window;
+
+        // Component Card Hover 3D Effect (desktop only)
+        if (!isMobile) {
+            document.querySelectorAll('.component-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                });
+            });
+        }
+
+        // Mobile: Show tooltip on tap for arch boxes
+        if (isMobile) {
+            archBoxes.forEach(box => {
+                box.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const text = box.getAttribute('data-tooltip');
+
+                    // Remove existing mobile tooltips
+                    document.querySelectorAll('.mobile-tooltip').forEach(t => t.remove());
+
+                    // Create mobile tooltip
+                    const mobileTooltip = document.createElement('div');
+                    mobileTooltip.className = 'mobile-tooltip';
+                    mobileTooltip.textContent = text;
+                    mobileTooltip.style.cssText = `
+                        position: absolute;
+                        bottom: 100%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: #1E293B;
+                        color: white;
+                        padding: 0.75rem 1rem;
+                        border-radius: 0.5rem;
+                        font-size: 0.8rem;
+                        max-width: 250px;
+                        text-align: center;
+                        margin-bottom: 0.5rem;
+                        z-index: 100;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    `;
+
+                    box.style.position = 'relative';
+                    box.appendChild(mobileTooltip);
+
+                    // Auto remove after 3 seconds
+                    setTimeout(() => mobileTooltip.remove(), 3000);
+                });
+            });
+
+            // Close tooltip on outside tap
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.mobile-tooltip').forEach(t => t.remove());
+            });
+        }
+
+        // Reduce animations on mobile for performance
+        if (isMobile) {
+            gsap.globalTimeline.timeScale(1.5); // Speed up animations
+        }
+    </script>
+</body>
+</html>

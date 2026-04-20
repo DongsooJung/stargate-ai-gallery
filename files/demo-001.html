@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic HQ Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  overflow: hidden;
+  background: #0a0a0f;
+  font-family: 'Sora', sans-serif;
+  cursor: crosshair;
+}
+
+#game-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+}
+
+#hud {
+  position: fixed;
+  top: 20px; left: 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#hud-logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #d4a574;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(212,165,116,0.3);
+}
+
+#hud-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 1px;
+}
+
+#controls-hint {
+  position: fixed;
+  bottom: 20px; left: 20px;
+  z-index: 10;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  line-height: 1.8;
+}
+
+.key {
+  display: inline-block;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+  margin: 0 2px;
+  color: rgba(255,255,255,0.5);
+}
+
+#interact-prompt {
+  position: fixed;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  color: #d4a574;
+  background: rgba(10,10,15,0.85);
+  border: 1px solid rgba(212,165,116,0.3);
+  padding: 12px 28px;
+  border-radius: 30px;
+  backdrop-filter: blur(10px);
+  display: none;
+  animation: pulse-glow 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(212,165,116,0.1); }
+  50% { box-shadow: 0 0 25px rgba(212,165,116,0.25); }
+}
+
+#crosshair {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+#crosshair::before, #crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(212,165,116,0.5);
+}
+
+#crosshair::before {
+  width: 16px; height: 1px;
+  top: 0; left: -8px;
+}
+
+#crosshair::after {
+  width: 1px; height: 16px;
+  top: -8px; left: 0;
+}
+
+#chat-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 420px;
+  max-height: 70vh;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  background: rgba(10,10,15,0.92);
+  border: 1px solid rgba(212,165,116,0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+#chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#chat-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+#chat-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff;
+}
+
+#chat-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+#chat-close {
+  margin-left: auto;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: rgba(255,255,255,0.4);
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  pointer-events: auto;
+}
+
+#chat-close:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+#chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 400px;
+}
+
+#chat-messages::-webkit-scrollbar { width: 4px; }
+#chat-messages::-webkit-scrollbar-track { background: transparent; }
+#chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.msg {
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 12px 16px;
+  border-radius: 12px;
+  max-width: 90%;
+  animation: msg-in 0.3s ease;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.npc {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.85);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.msg.user {
+  background: rgba(212,165,116,0.15);
+  color: #d4a574;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.msg.system {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  align-self: center;
+  text-align: center;
+  background: none;
+  padding: 4px;
+}
+
+#chat-input-area {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+#chat-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#chat-input:focus {
+  border-color: rgba(212,165,116,0.4);
+}
+
+#chat-input::placeholder {
+  color: rgba(255,255,255,0.25);
+}
+
+#chat-send {
+  background: #d4a574;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #0a0a0f;
+  font-family: 'Sora', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  pointer-events: auto;
+}
+
+#chat-send:hover { background: #e0b88a; transform: scale(1.02); }
+#chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+#loading-dot {
+  display: none;
+}
+
+#loading-dot.active {
+  display: inline-flex;
+  gap: 4px;
+  padding: 8px 16px;
+  align-self: flex-start;
+}
+
+#loading-dot span {
+  width: 6px; height: 6px;
+  background: rgba(212,165,116,0.5);
+  border-radius: 50%;
+  animation: bounce 1.4s ease-in-out infinite;
+}
+
+#loading-dot span:nth-child(2) { animation-delay: 0.16s; }
+#loading-dot span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+#minimap {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 160px;
+  height: 160px;
+  background: rgba(10,10,15,0.85);
+  border: 1px solid rgba(212,165,116,0.2);
+  border-radius: 12px;
+  z-index: 10;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+#minimap canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#start-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 100;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+#start-screen h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  color: #d4a574;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+#start-screen p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  max-width: 500px;
+  text-align: center;
+  line-height: 1.8;
+}
+
+#start-btn {
+  margin-top: 20px;
+  background: transparent;
+  border: 2px solid #d4a574;
+  color: #d4a574;
+  font-family: 'Sora', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 48px;
+  border-radius: 50px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+#start-btn:hover {
+  background: #d4a574;
+  color: #0a0a0f;
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(212,165,116,0.3);
+}
+
+#npc-label {
+  position: fixed;
+  z-index: 12;
+  pointer-events: none;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4a574;
+  background: rgba(10,10,15,0.8);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(212,165,116,0.2);
+  display: none;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+  <h1>ANTHROPIC HQ</h1>
+  <p>Explore the Anthropic office and chat with co-founders. Walk around, discover research labs, and have AI-powered conversations with the team building safe AI.</p>
+  <button id="start-btn" onclick="startGame()">ENTER OFFICE</button>
+</div>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="hud">
+  <div id="hud-logo">ANTHROPIC HQ</div>
+  <div id="hud-sub">RESEARCHER SIMULATOR v1.0</div>
+</div>
+
+<div id="controls-hint">
+  <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Move &nbsp;
+  <span class="key">←</span><span class="key">→</span> Look &nbsp;
+  <span class="key">E</span> Interact &nbsp;
+  <span class="key">ESC</span> Close
+</div>
+
+<div id="crosshair"></div>
+<div id="interact-prompt">Press <span class="key">E</span> to talk</div>
+<div id="npc-label"></div>
+
+<div id="minimap"><canvas id="minimap-canvas" width="160" height="160"></canvas></div>
+
+<div id="chat-panel">
+  <div id="chat-header">
+    <div id="chat-avatar">👤</div>
+    <div>
+      <div id="chat-name">—</div>
+      <div id="chat-role">—</div>
+    </div>
+    <button id="chat-close" onclick="closeChat()">✕</button>
+  </div>
+  <div id="chat-messages">
+    <div id="loading-dot"><span></span><span></span><span></span></div>
+  </div>
+  <div id="chat-input-area">
+    <input id="chat-input" type="text" placeholder="Ask something..." autocomplete="off" />
+    <button id="chat-send" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── GLOBALS ─────────────────────────────────────────
+let scene, camera, renderer, clock;
+let playerPos = { x: 0, z: 12 };
+let playerAngle = Math.PI;
+let moveSpeed = 0.12;
+let rotSpeed = 0.04;
+let keys = {};
+let npcs = [];
+let nearestNpc = null;
+let chatOpen = false;
+let chatTarget = null;
+let chatHistory = [];
+let isLoading = false;
+let walls = [];
+let furniture = [];
+
+// ─── NPC DATA ────────────────────────────────────────
+const NPC_DATA = [
+  {
+    name: "Dario Amodei",
+    role: "CEO & Co-founder",
+    color: 0xd4a574,
+    emoji: "🎯",
+    pos: { x: -6, z: -8 },
+    personality: "You are Dario Amodei, CEO of Anthropic. You are thoughtful, intellectually curious, and deeply passionate about AI safety. You speak with careful precision but also warmth. You often reference scaling laws, your background in physics at Princeton, and your time at OpenAI before founding Anthropic with your sister Daniela. You believe in 'responsible scaling' — pushing AI capabilities forward while ensuring safety keeps pace. You're known for your long-form essays about AI existential risk. Keep responses conversational, insightful, and occasionally inject dry humor."
+  },
+  {
+    name: "Daniela Amodei",
+    role: "President & Co-founder",
+    color: 0xe8a87c,
+    emoji: "💼",
+    pos: { x: 6, z: -8 },
+    personality: "You are Daniela Amodei, President of Anthropic. You focus on the business and operational side — scaling the company, building partnerships, and ensuring Anthropic's mission translates into sustainable growth. Before Anthropic, you held senior roles at Stripe and OpenAI. You're pragmatic, warm, and results-oriented. You care deeply about diversity in AI and making sure safety research doesn't remain purely academic. You bridge the gap between research ambition and real-world impact. Speak with confident executive energy but remain approachable."
+  },
+  {
+    name: "Jared Kaplan",
+    role: "Co-founder & Researcher",
+    color: 0x7eb8da,
+    emoji: "📊",
+    pos: { x: -8, z: 0 },
+    personality: "You are Jared Kaplan, co-founder of Anthropic and a theoretical physicist turned AI researcher. You are famous for your groundbreaking work on neural scaling laws — discovering that model performance scales predictably with compute, data, and parameters. You speak like a physicist: precise, mathematical, always looking for the underlying pattern. You get excited about power laws, information theory, and emergence in neural networks. You might casually reference your Johns Hopkins physics background. You're intellectual but enthusiastic, especially when someone asks about scaling."
+  },
+  {
+    name: "Chris Olah",
+    role: "Co-founder, Interpretability",
+    color: 0x8fd4b0,
+    emoji: "🔍",
+    pos: { x: 8, z: 0 },
+    personality: "You are Chris Olah, co-founder of Anthropic leading interpretability research. You're known for your beautiful blog posts visualizing neural network internals and your work on circuits in neural networks. You're self-taught in ML, never finished a traditional degree, which gives you a unique outsider perspective. You are gentle, curious, and deeply fascinated by understanding what's actually happening inside neural networks. You believe interpretability is the key to AI safety — if we can understand AI systems, we can make them safe. You often use visual metaphors and analogies."
+  },
+  {
+    name: "Sam McCandlish",
+    role: "Co-founder & Researcher",
+    color: 0xc49dd8,
+    emoji: "⚡",
+    pos: { x: 0, z: -4 },
+    personality: "You are Sam McCandlish, co-founder of Anthropic. You co-authored the influential scaling laws papers with Jared Kaplan. You're deeply technical, focused on training dynamics and optimization. You have a knack for finding elegant solutions to complex problems. You're collaborative, often building on others' ideas. You came from OpenAI where you worked on GPT research. You speak with technical depth but try to make concepts accessible. You get excited about training efficiency, loss curves, and compute-optimal scaling."
+  },
+  {
+    name: "Jack Clark",
+    role: "Co-founder, Policy",
+    color: 0xdaa06d,
+    emoji: "🌍",
+    pos: { x: 0, z: 4 },
+    personality: "You are Jack Clark, co-founder of Anthropic focused on AI policy and societal impact. Before Anthropic, you were Policy Director at OpenAI and a journalist covering AI for Bloomberg. You write the famous 'Import AI' newsletter. You think about AI governance, international competition in AI, and how to create good policy frameworks. You're articulate, politically savvy, and passionate about ensuring AI benefits everyone. You bridge the technical and policy worlds. You often reference geopolitics, regulation trends, and your journalism background."
+  },
+  {
+    name: "Tom Brown",
+    role: "Co-founder & Researcher",
+    color: 0xf0a0a0,
+    emoji: "🧠",
+    pos: { x: -4, z: 5 },
+    personality: "You are Tom Brown, co-founder of Anthropic. You led the GPT-3 project at OpenAI — one of the most influential AI papers ever. You're a systems thinker who cares about making large language models actually work well in practice. You're practical, engineering-minded, and focused on reliability and robustness. You think a lot about evaluation, benchmarks, and what it means for a model to truly be helpful. You speak directly and get to the point. You enjoy discussing the craft of building AI systems that actually work."
+  }
+];
+
+// ─── THREE.JS SETUP ──────────────────────────────────
+function initScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a0f);
+  scene.fog = new THREE.FogExp2(0x0a0a0f, 0.035);
+
+  camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 100);
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas'), antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.8;
+
+  clock = new THREE.Clock();
+
+  // Ambient
+  const ambient = new THREE.AmbientLight(0x1a1a2e, 0.6);
+  scene.add(ambient);
+
+  // Main overhead lights
+  const mainLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+  mainLight.position.set(5, 15, 5);
+  mainLight.castShadow = true;
+  scene.add(mainLight);
+
+  // Warm point lights
+  const warmColors = [0xd4a574, 0xffcc88, 0xe8a87c, 0xffd4a0];
+  const lightPositions = [
+    [-6, 5, -6], [6, 5, -6], [-6, 5, 6], [6, 5, 6], [0, 5, 0]
+  ];
+  lightPositions.forEach((p, i) => {
+    const pl = new THREE.PointLight(warmColors[i % warmColors.length], 0.7, 18);
+    pl.position.set(...p);
+    scene.add(pl);
+  });
+
+  buildOffice();
+  createNPCs();
+}
+
+// ─── BUILD OFFICE ────────────────────────────────────
+function buildOffice() {
+  // Floor
+  const floorGeo = new THREE.PlaneGeometry(30, 30);
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1a22,
+    roughness: 0.8,
+    metalness: 0.1
+  });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // Grid lines on floor
+  const gridHelper = new THREE.GridHelper(30, 30, 0x222233, 0x16161e);
+  scene.add(gridHelper);
+
+  // Ceiling
+  const ceilGeo = new THREE.PlaneGeometry(30, 30);
+  const ceilMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 1 });
+  const ceil = new THREE.Mesh(ceilGeo, ceilMat);
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.y = 4;
+  scene.add(ceil);
+
+  // Walls
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x151520, roughness: 0.7 });
+  const wallData = [
+    { w: 30, h: 4, d: 0.2, x: 0, y: 2, z: -15 },
+    { w: 30, h: 4, d: 0.2, x: 0, y: 2, z: 15 },
+    { w: 0.2, h: 4, d: 30, x: -15, y: 2, z: 0 },
+    { w: 0.2, h: 4, d: 30, x: 15, y: 2, z: 0 }
+  ];
+  wallData.forEach(w => {
+    const geo = new THREE.BoxGeometry(w.w, w.h, w.d);
+    const mesh = new THREE.Mesh(geo, wallMat);
+    mesh.position.set(w.x, w.y, w.z);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    walls.push({ x: w.x, z: w.z, hw: w.w / 2, hd: w.d / 2, isWall: true, w: w.w, d: w.d });
+  });
+
+  // Wall accent strips
+  const accentMat = new THREE.MeshStandardMaterial({ color: 0xd4a574, emissive: 0xd4a574, emissiveIntensity: 0.3, metalness: 0.8 });
+  wallData.forEach(w => {
+    const geo = new THREE.BoxGeometry(w.w * 0.98, 0.04, w.d + 0.05);
+    const strip = new THREE.Mesh(geo, accentMat);
+    strip.position.set(w.x, 0.8, w.z);
+    scene.add(strip);
+  });
+
+  // Desks
+  const deskMat = new THREE.MeshStandardMaterial({ color: 0x2a2a35, roughness: 0.5, metalness: 0.3 });
+  const deskPositions = [
+    [-6, -8], [6, -8], [-8, 0], [8, 0], [0, -4], [0, 4], [-4, 5]
+  ];
+  deskPositions.forEach((p, i) => {
+    // Desk top
+    const dGeo = new THREE.BoxGeometry(2.5, 0.08, 1.2);
+    const desk = new THREE.Mesh(dGeo, deskMat);
+    desk.position.set(p[0], 0.85, p[1]);
+    desk.castShadow = true;
+    desk.receiveShadow = true;
+    scene.add(desk);
+
+    // Desk legs
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x222230, metalness: 0.5 });
+    [[-1, -0.4], [1, -0.4], [-1, 0.4], [1, 0.4]].forEach(l => {
+      const lGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.85);
+      const leg = new THREE.Mesh(lGeo, legMat);
+      leg.position.set(p[0] + l[0], 0.425, p[1] + l[1]);
+      scene.add(leg);
+    });
+
+    // Monitor on desk
+    const monGeo = new THREE.BoxGeometry(0.8, 0.5, 0.04);
+    const monMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0a12,
+      emissive: 0x1a3a5a,
+      emissiveIntensity: 0.4,
+      metalness: 0.9
+    });
+    const mon = new THREE.Mesh(monGeo, monMat);
+    mon.position.set(p[0], 1.2, p[1] - 0.3);
+    scene.add(mon);
+
+    // Screen glow
+    const screenGeo = new THREE.BoxGeometry(0.7, 0.4, 0.01);
+    const screenMat = new THREE.MeshStandardMaterial({
+      color: 0x88ccff,
+      emissive: 0x88ccff,
+      emissiveIntensity: 0.15
+    });
+    const screen = new THREE.Mesh(screenGeo, screenMat);
+    screen.position.set(p[0], 1.2, p[1] - 0.31);
+    scene.add(screen);
+
+    furniture.push({ x: p[0], z: p[1], r: 1.2 });
+  });
+
+  // Anthropic logo wall sign (back wall)
+  const signGeo = new THREE.BoxGeometry(6, 1.2, 0.1);
+  const signMat = new THREE.MeshStandardMaterial({
+    color: 0xd4a574,
+    emissive: 0xd4a574,
+    emissiveIntensity: 0.5,
+    metalness: 0.8,
+    roughness: 0.2
+  });
+  const sign = new THREE.Mesh(signGeo, signMat);
+  sign.position.set(0, 3, -14.8);
+  scene.add(sign);
+
+  // Decorative pillars
+  const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1e1e28, roughness: 0.4, metalness: 0.5 });
+  [[-10, -10], [10, -10], [-10, 10], [10, 10]].forEach(p => {
+    const pGeo = new THREE.CylinderGeometry(0.3, 0.3, 4, 8);
+    const pillar = new THREE.Mesh(pGeo, pillarMat);
+    pillar.position.set(p[0], 2, p[1]);
+    pillar.castShadow = true;
+    scene.add(pillar);
+    walls.push({ x: p[0], z: p[1], r: 0.5 });
+  });
+
+  // Plants
+  const plantPositions = [[-12, -12], [12, -12], [-12, 12], [12, 12], [-3, -10], [3, -10]];
+  plantPositions.forEach(p => {
+    // Pot
+    const potGeo = new THREE.CylinderGeometry(0.3, 0.25, 0.5, 8);
+    const potMat = new THREE.MeshStandardMaterial({ color: 0x3a3a48 });
+    const pot = new THREE.Mesh(potGeo, potMat);
+    pot.position.set(p[0], 0.25, p[1]);
+    scene.add(pot);
+
+    // Foliage
+    const foliageGeo = new THREE.SphereGeometry(0.5, 8, 8);
+    const foliageMat = new THREE.MeshStandardMaterial({ color: 0x2a5a3a, roughness: 0.9 });
+    const foliage = new THREE.Mesh(foliageGeo, foliageMat);
+    foliage.position.set(p[0], 0.9, p[1]);
+    foliage.scale.y = 1.3;
+    scene.add(foliage);
+  });
+
+  // Whiteboard
+  const wbGeo = new THREE.BoxGeometry(3, 2, 0.08);
+  const wbMat = new THREE.MeshStandardMaterial({ color: 0xddd8d0, roughness: 0.3 });
+  const wb = new THREE.Mesh(wbGeo, wbMat);
+  wb.position.set(-14.9, 2.2, -4);
+  wb.rotation.y = Math.PI / 2;
+  scene.add(wb);
+
+  // Conference table center area
+  const ctGeo = new THREE.CylinderGeometry(2, 2, 0.08, 16);
+  const ctMat = new THREE.MeshStandardMaterial({ color: 0x2a2a35, roughness: 0.3, metalness: 0.5 });
+  const ct = new THREE.Mesh(ctGeo, ctMat);
+  ct.position.set(0, 0.85, -11);
+  scene.add(ct);
+
+  // Chairs around conference table
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+    const cx = Math.cos(a) * 2.8;
+    const cz = Math.sin(a) * 2.8 - 11;
+    const chairGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.6, 8);
+    const chairMat = new THREE.MeshStandardMaterial({ color: 0x333340 });
+    const chair = new THREE.Mesh(chairGeo, chairMat);
+    chair.position.set(cx, 0.55, cz);
+    scene.add(chair);
+  }
+
+  // Couch (lounge area)
+  const couchGeo = new THREE.BoxGeometry(3, 0.6, 1);
+  const couchMat = new THREE.MeshStandardMaterial({ color: 0x2d2843, roughness: 0.8 });
+  const couch = new THREE.Mesh(couchGeo, couchMat);
+  couch.position.set(10, 0.35, 10);
+  scene.add(couch);
+  const backGeo = new THREE.BoxGeometry(3, 0.6, 0.2);
+  const back = new THREE.Mesh(backGeo, couchMat);
+  back.position.set(10, 0.7, 10.5);
+  scene.add(back);
+
+  // Coffee table
+  const coffeeGeo = new THREE.BoxGeometry(1.5, 0.06, 0.8);
+  const coffeeMat = new THREE.MeshStandardMaterial({ color: 0x3a3330, roughness: 0.4 });
+  const coffee = new THREE.Mesh(coffeeGeo, coffeeMat);
+  coffee.position.set(10, 0.45, 8.8);
+  scene.add(coffee);
+}
+
+// ─── CREATE NPCs ─────────────────────────────────────
+function createNPCs() {
+  NPC_DATA.forEach(data => {
+    const group = new THREE.Group();
+
+    // Body
+    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.35, 1.2, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.5, metalness: 0.2 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 1.0;
+    body.castShadow = true;
+    group.add(body);
+
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.28, 12, 12);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xe8cdb5, roughness: 0.6 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.85;
+    head.castShadow = true;
+    group.add(head);
+
+    // Glow ring at feet
+    const ringGeo = new THREE.RingGeometry(0.5, 0.6, 32);
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: data.color,
+      emissive: data.color,
+      emissiveIntensity: 0.5,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.4
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.02;
+    group.add(ring);
+
+    // Hovering name point light
+    const npcLight = new THREE.PointLight(data.color, 0.4, 5);
+    npcLight.position.y = 2.5;
+    group.add(npcLight);
+
+    group.position.set(data.pos.x, 0, data.pos.z);
+    scene.add(group);
+
+    npcs.push({
+      ...data,
+      mesh: group,
+      ring: ring
+    });
+  });
+}
+
+// ─── COLLISION ────────────────────────────────────────
+function canMove(nx, nz) {
+  // Room bounds
+  if (Math.abs(nx) > 14.2 || Math.abs(nz) > 14.2) return false;
+
+  // NPC collision
+  for (const npc of npcs) {
+    const dx = nx - npc.pos.x;
+    const dz = nz - npc.pos.z;
+    if (Math.sqrt(dx * dx + dz * dz) < 0.8) return false;
+  }
+
+  return true;
+}
+
+// ─── INPUT ───────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  keys[e.code] = true;
+
+  if (e.key === 'e' || e.key === 'E') {
+    if (nearestNpc && !chatOpen) {
+      openChat(nearestNpc);
+    }
+  }
+
+  if (e.key === 'Escape' && chatOpen) {
+    closeChat();
+  }
+
+  if (e.key === 'Enter' && chatOpen) {
+    sendMessage();
+  }
+});
+
+document.addEventListener('keyup', e => {
+  keys[e.key.toLowerCase()] = false;
+  keys[e.code] = false;
+});
+
+// ─── CHAT SYSTEM ─────────────────────────────────────
+function openChat(npc) {
+  chatOpen = true;
+  chatTarget = npc;
+  chatHistory = [];
+
+  const panel = document.getElementById('chat-panel');
+  panel.style.display = 'flex';
+
+  document.getElementById('chat-avatar').textContent = npc.emoji;
+  document.getElementById('chat-avatar').style.background = `rgba(${hexToRgb(npc.color)}, 0.2)`;
+  document.getElementById('chat-name').textContent = npc.name;
+  document.getElementById('chat-role').textContent = npc.role;
+
+  const msgs = document.getElementById('chat-messages');
+  // Clear old messages except loading
+  const loadingDot = document.getElementById('loading-dot');
+  msgs.innerHTML = '';
+  msgs.appendChild(loadingDot);
+
+  addSystemMessage(`You approached ${npc.name}`);
+
+  // Auto-greet
+  generateResponse(npc, `[The user just walked up to you in the Anthropic office. Give a brief, warm, in-character greeting. 1-2 sentences max.]`);
+
+  setTimeout(() => document.getElementById('chat-input').focus(), 100);
+}
+
+function closeChat() {
+  chatOpen = false;
+  chatTarget = null;
+  document.getElementById('chat-panel').style.display = 'none';
+}
+
+function addMessage(text, type) {
+  const msgs = document.getElementById('chat-messages');
+  const loadingDot = document.getElementById('loading-dot');
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+  div.textContent = text;
+  msgs.insertBefore(div, loadingDot);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addSystemMessage(text) {
+  addMessage(text, 'system');
+}
+
+async function sendMessage() {
+  if (isLoading || !chatTarget) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  addMessage(text, 'user');
+  generateResponse(chatTarget, text);
+}
+
+async function generateResponse(npc, userText) {
+  isLoading = true;
+  document.getElementById('chat-send').disabled = true;
+  document.getElementById('loading-dot').classList.add('active');
+
+  chatHistory.push({ role: 'user', content: userText });
+
+  const systemPrompt = `${npc.personality}\n\nIMPORTANT RULES:\n- Stay completely in character as ${npc.name}.\n- Keep responses concise (2-4 sentences usually, up to a short paragraph for deeper questions).\n- Be conversational, witty, and insightful.\n- Reference real facts about Anthropic, AI research, and your actual background.\n- If asked something you wouldn't know, deflect in-character.\n- Never break character or mention being an AI language model.\n- You're having a casual office conversation.`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: chatHistory.slice(-10)
+      })
+    });
+
+    const data = await resp.json();
+    const reply = data.content?.map(c => c.text || '').join('') || "Hmm, I seem to have lost my train of thought. What were you saying?";
+
+    chatHistory.push({ role: 'assistant', content: reply });
+    addMessage(reply, 'npc');
+  } catch (err) {
+    addMessage("*steps away for a moment* Sorry, got distracted by a Slack notification. What was that?", 'npc');
+    console.error(err);
+  }
+
+  isLoading = false;
+  document.getElementById('chat-send').disabled = false;
+  document.getElementById('loading-dot').classList.remove('active');
+}
+
+// ─── MINIMAP ─────────────────────────────────────────
+function drawMinimap() {
+  const canvas = document.getElementById('minimap-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 160, 160);
+
+  const scale = 160 / 30;
+  const ox = 80, oy = 80;
+
+  // Room outline
+  ctx.strokeStyle = 'rgba(212,165,116,0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(ox - 15 * scale / 2 + (15 * scale / 2 - 75), oy - 15 * scale / 2 + (15 * scale / 2 - 75), 15 * scale, 15 * scale);
+  // Simplified: draw full room
+  ctx.strokeRect(3, 3, 154, 154);
+
+  // NPCs
+  npcs.forEach(npc => {
+    const mx = ox + npc.pos.x * (150 / 30);
+    const mz = oy + npc.pos.z * (150 / 30);
+    const rgb = hexToRgb(npc.color);
+    ctx.fillStyle = `rgba(${rgb}, 0.8)`;
+    ctx.beginPath();
+    ctx.arc(mx, mz, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Player
+  const px = ox + playerPos.x * (150 / 30);
+  const pz = oy + playerPos.z * (150 / 30);
+
+  // Direction indicator
+  const dx = Math.sin(playerAngle) * 10;
+  const dz = -Math.cos(playerAngle) * 10;
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(px, pz);
+  ctx.lineTo(px + dx, pz + dz);
+  ctx.stroke();
+
+  // Player dot
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(px, pz, 4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ─── GAME LOOP ───────────────────────────────────────
+function update() {
+  if (!chatOpen) {
+    // Movement
+    let dx = 0, dz = 0;
+    if (keys['w']) { dx += Math.sin(playerAngle); dz -= Math.cos(playerAngle); }
+    if (keys['s']) { dx -= Math.sin(playerAngle); dz += Math.cos(playerAngle); }
+    if (keys['a']) { dx -= Math.cos(playerAngle); dz -= Math.sin(playerAngle); }
+    if (keys['d']) { dx += Math.cos(playerAngle); dz += Math.sin(playerAngle); }
+
+    if (dx || dz) {
+      const len = Math.sqrt(dx * dx + dz * dz);
+      dx /= len; dz /= len;
+      const nx = playerPos.x + dx * moveSpeed;
+      const nz = playerPos.z + dz * moveSpeed;
+      if (canMove(nx, playerPos.z)) playerPos.x = nx;
+      if (canMove(playerPos.x, nz)) playerPos.z = nz;
+    }
+
+    // Rotation
+    if (keys['arrowleft']) playerAngle -= rotSpeed;
+    if (keys['arrowright']) playerAngle += rotSpeed;
+  }
+
+  // Camera
+  camera.position.set(playerPos.x, 1.6, playerPos.z);
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = -playerAngle;
+
+  // Find nearest NPC
+  let minDist = Infinity;
+  nearestNpc = null;
+  const npcLabel = document.getElementById('npc-label');
+  const interactPrompt = document.getElementById('interact-prompt');
+
+  npcs.forEach(npc => {
+    const dx = playerPos.x - npc.pos.x;
+    const dz = playerPos.z - npc.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+
+    // Animate ring
+    const t = clock.getElapsedTime();
+    npc.ring.material.opacity = 0.2 + Math.sin(t * 2 + npcs.indexOf(npc)) * 0.15;
+    npc.ring.rotation.z = t * 0.5;
+
+    // Bobbing
+    npc.mesh.children[1].position.y = 1.85 + Math.sin(t * 1.5 + npcs.indexOf(npc) * 1.5) * 0.03;
+
+    if (dist < minDist) {
+      minDist = dist;
+      nearestNpc = dist < 3.5 ? npc : null;
+    }
+  });
+
+  if (nearestNpc && !chatOpen) {
+    interactPrompt.style.display = 'block';
+
+    // Project NPC position to screen for label
+    const npcWorldPos = new THREE.Vector3(nearestNpc.pos.x, 2.3, nearestNpc.pos.z);
+    npcWorldPos.project(camera);
+    const sx = (npcWorldPos.x * 0.5 + 0.5) * window.innerWidth;
+    const sy = (-npcWorldPos.y * 0.5 + 0.5) * window.innerHeight;
+
+    if (npcWorldPos.z < 1) {
+      npcLabel.style.display = 'block';
+      npcLabel.style.left = sx + 'px';
+      npcLabel.style.top = (sy - 20) + 'px';
+      npcLabel.textContent = `${nearestNpc.emoji} ${nearestNpc.name}`;
+    } else {
+      npcLabel.style.display = 'none';
+    }
+  } else {
+    interactPrompt.style.display = 'none';
+    npcLabel.style.display = 'none';
+  }
+
+  drawMinimap();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  update();
+  renderer.render(scene, camera);
+}
+
+// ─── HELPERS ─────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = (hex >> 16) & 255;
+  const g = (hex >> 8) & 255;
+  const b = hex & 255;
+  return `${r},${g},${b}`;
+}
+
+// ─── RESIZE ──────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── START ───────────────────────────────────────────
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  initScene();
+  animate();
+}
+</script>
+</body>
+</html>

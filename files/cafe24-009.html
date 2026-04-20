@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상세페이지 템플릿</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap');
+
+/* ====== RESET & BASE ====== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --navy: #0B1D3A;
+  --navy-light: #1A3258;
+  --gold: #D4A853;
+  --gold-light: #F0D78C;
+  --cream: #FBF7F0;
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-400: #9CA3AF;
+  --gray-600: #4B5563;
+  --gray-800: #1F2937;
+  --red: #DC2626;
+  --green: #059669;
+  --blue: #2563EB;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.15);
+  --radius: 12px;
+  --max-w: 860px;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--gray-800);
+  background: var(--white);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.detail-wrap {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* ====== SECTION 1: HERO ====== */
+.hero {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 60%, #253D5B 100%);
+  padding: 56px 32px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(212,168,83,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -40%;
+  left: -15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212,168,83,0.15);
+  border: 1px solid rgba(212,168,83,0.3);
+  border-radius: 100px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gold-light);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.5px;
+}
+
+.hero-badge::before {
+  content: '📘';
+  font-size: 14px;
+}
+
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.35;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 300;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 32px;
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 400;
+}
+
+/* ====== SECTION 2: PROBLEM ====== */
+.problem {
+  background: var(--cream);
+  padding: 48px 32px;
+}
+
+.problem-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.problem-title em {
+  font-style: normal;
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-color: rgba(220,38,38,0.3);
+  text-underline-offset: 4px;
+}
+
+.problem-list {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.problem-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.problem-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.problem-text {
+  font-size: 15px;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.problem-text strong {
+  color: var(--gray-800);
+  font-weight: 700;
+}
+
+/* ====== SECTION 3: AUTHOR CREDENTIAL ====== */
+.author {
+  padding: 48px 32px;
+  background: var(--white);
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.section-label::before,
+.section-label::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.author-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+.credential-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+
+@media (max-width: 600px) {
+  .credential-grid { grid-template-columns: 1fr; }
+}
+
+.credential-card {
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  padding: 24px 16px;
+  text-align: center;
+  border: 1px solid var(--gray-200);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.credential-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.credential-emoji {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.credential-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.credential-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.credential-sub {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+.author-detail {
+  max-width: 600px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  color: var(--white);
+}
+
+.author-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.author-detail-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+}
+
+.author-detail-list li::before {
+  content: '✓';
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(212,168,83,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--gold-light);
+}
+
+/* ====== SECTION 4: TABLE OF CONTENTS ====== */
+.toc {
+  padding: 48px 32px;
+  background: var(--gray-50);
+}
+
+.toc-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+.toc-parts {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toc-part {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.toc-part-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--white);
+}
+
+.toc-part-num {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--gold-light);
+}
+
+.toc-part-info {
+  flex: 1;
+}
+
+.toc-part-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+
+.toc-part-desc {
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.toc-chapters {
+  padding: 0 20px 18px 74px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toc-chapter {
+  font-size: 14px;
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toc-chapter::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.toc-bonus {
+  max-width: 640px;
+  margin: 20px auto 0;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #F59E0B;
+}
+
+.toc-bonus-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.toc-bonus-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400E;
+}
+
+.toc-bonus-sub {
+  font-size: 13px;
+  color: #A16207;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* ====== SECTION 5: DIFFERENTIATOR ====== */
+.diff {
+  padding: 48px 32px;
+  background: var(--white);
+}
+
+.diff-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.diff-compare {
+  max-width: 640px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 500px) {
+  .diff-compare { grid-template-columns: 1fr; }
+}
+
+.diff-col {
+  border-radius: var(--radius);
+  padding: 24px 20px;
+}
+
+.diff-col--old {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+}
+
+.diff-col--new {
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border: 2px solid var(--blue);
+}
+
+.diff-col-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diff-col--old .diff-col-label { color: var(--gray-400); }
+.diff-col--new .diff-col-label { color: var(--blue); }
+
+.diff-item {
+  font-size: 14px;
+  color: var(--gray-600);
+  padding: 6px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.diff-col--old .diff-item::before {
+  content: '✕';
+  color: var(--gray-400);
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.diff-col--new .diff-item::before {
+  content: '✓';
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ====== SECTION 6: REVIEW / SOCIAL PROOF ====== */
+.review {
+  padding: 48px 32px;
+  background: var(--cream);
+}
+
+.review-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+.review-cards {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.review-stars {
+  color: #F59E0B;
+  font-size: 16px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.review-content {
+  font-size: 15px;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.review-author {
+  font-size: 13px;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-author::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gray-200);
+}
+
+/* ====== SECTION 7: PRICING ====== */
+.pricing {
+  padding: 48px 32px;
+  background: var(--white);
+}
+
+.pricing-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+.pricing-cards {
+  max-width: 640px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 500px) {
+  .pricing-cards { grid-template-columns: 1fr; }
+}
+
+.pricing-card {
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.pricing-card:hover {
+  transform: translateY(-3px);
+}
+
+.pricing-card--single {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.pricing-card--bundle {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  border: 2px solid var(--gold);
+  color: var(--white);
+}
+
+.pricing-best {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 16px;
+  border-radius: 100px;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.pricing-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pricing-card--single .pricing-name { color: var(--navy); }
+
+.pricing-desc {
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.pricing-card--single .pricing-desc { color: var(--gray-400); }
+.pricing-card--bundle .pricing-desc { color: rgba(255,255,255,0.6); }
+
+.pricing-original {
+  font-size: 14px;
+  text-decoration: line-through;
+  margin-bottom: 4px;
+}
+
+.pricing-card--single .pricing-original { color: var(--gray-400); }
+.pricing-card--bundle .pricing-original { color: rgba(255,255,255,0.5); }
+
+.pricing-price {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.pricing-card--single .pricing-price { color: var(--navy); }
+.pricing-card--bundle .pricing-price { color: var(--gold-light); }
+
+.pricing-save {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.pricing-card--single .pricing-save { color: var(--green); }
+.pricing-card--bundle .pricing-save { color: var(--gold); }
+
+.pricing-includes {
+  text-align: left;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.pricing-card--single .pricing-includes { color: var(--gray-600); }
+.pricing-card--bundle .pricing-includes { color: rgba(255,255,255,0.8); }
+
+.pricing-include-item {
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pricing-include-item::before {
+  content: '✓';
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pricing-card--single .pricing-include-item::before { color: var(--green); }
+.pricing-card--bundle .pricing-include-item::before { color: var(--gold); }
+
+.pricing-cta {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.pricing-cta:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.pricing-card--single .pricing-cta {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.pricing-card--bundle .pricing-cta {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* ====== SECTION 8: FAQ ====== */
+.faq {
+  padding: 48px 32px;
+  background: var(--gray-50);
+}
+
+.faq-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+.faq-list {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.faq-q {
+  padding: 18px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.faq-q::before {
+  content: 'Q';
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: var(--gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.faq-a {
+  padding: 0 20px 18px 54px;
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* ====== SECTION 9: GUARANTEE ====== */
+.guarantee {
+  padding: 48px 32px;
+  background: var(--white);
+}
+
+.guarantee-box {
+  max-width: 640px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+  border: 2px solid var(--green);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.guarantee-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.guarantee-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #065F46;
+  margin-bottom: 10px;
+}
+
+.guarantee-text {
+  font-size: 14px;
+  color: #047857;
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ====== SECTION 10: FINAL CTA ====== */
+.final-cta {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 56px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A853' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.final-cta-content {
+  position: relative;
+  z-index: 1;
+}
+
+.final-cta h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 900;
+  color: var(--white);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.final-cta h2 em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+.final-cta-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 28px;
+}
+
+.final-cta-btn {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 17px;
+  font-weight: 900;
+  padding: 16px 48px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(212,168,83,0.3);
+  cursor: pointer;
+  border: none;
+}
+
+.final-cta-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 30px rgba(212,168,83,0.4);
+}
+
+.final-cta-note {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 16px;
+}
+
+/* ====== TRUST BAR ====== */
+.trust-bar {
+  background: var(--gray-50);
+  padding: 20px 32px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.trust-item::before {
+  font-size: 16px;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 480px) {
+  .hero { padding: 40px 20px 36px; }
+  .problem, .author, .toc, .diff, .review, .pricing, .faq, .guarantee, .final-cta {
+    padding: 36px 16px;
+  }
+  .credential-grid { gap: 10px; }
+  .toc-chapters { padding-left: 54px; }
+}
+</style>
+</head>
+<body>
+
+<div class="detail-wrap">
+
+  <!-- ====== HERO ====== -->
+  <section class="hero">
+    <div class="hero-badge">대치동 수학·정보 전문 교육 도서</div>
+    <h1>대치동 수학 강사의<br><em>고등수학 완전정복</em></h1>
+    <p class="hero-sub">서울대 공대 박사 × KOI 출신 × 현직 대치동 강사가 쓴<br>실전 검증 수학 교재</p>
+    <div class="hero-tags">
+      <span class="hero-tag">📄 PDF/EPUB</span>
+      <span class="hero-tag">📖 150~200페이지</span>
+      <span class="hero-tag">⚡ 즉시 다운로드</span>
+      <span class="hero-tag">💰 ₩29,000</span>
+    </div>
+  </section>
+
+  <!-- ====== PROBLEM ====== -->
+  <section class="problem">
+    <h2 class="problem-title">혹시 이런 <em>고민</em>을 하고 계신가요?</h2>
+    <div class="problem-list">
+      <div class="problem-item">
+        <div class="problem-icon">😰</div>
+        <p class="problem-text"><strong>학원을 다녀도</strong> 수학 성적이 오르지 않아 불안한 학부모</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">📚</div>
+        <p class="problem-text"><strong>시중 교재가 너무 많아</strong> 어떤 것을 선택해야 할지 모르는 고1~고2 학생</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">🎯</div>
+        <p class="problem-text"><strong>킬러 문항</strong>에서 매번 틀리는데, 어떻게 접근해야 할지 감이 안 잡히는 학생</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">💡</div>
+        <p class="problem-text"><strong>대치동 강사들은 어떻게 가르치는지</strong> 궁금한 학부모</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== AUTHOR CREDENTIAL ====== -->
+  <section class="author">
+    <div class="section-label">AUTHOR</div>
+    <h2 class="author-title">이 책을 쓴 저자는?</h2>
+    <div class="credential-grid">
+      <div class="credential-card">
+        <div class="credential-emoji">🎓</div>
+        <div class="credential-label">학력</div>
+        <div class="credential-value">서울대학교<br>공대 박사</div>
+        <div class="credential-sub">스마트도시공학 전공</div>
+      </div>
+      <div class="credential-card">
+        <div class="credential-emoji">🏆</div>
+        <div class="credential-label">수상</div>
+        <div class="credential-value">정보올림피아드<br>(KOI) 대상</div>
+        <div class="credential-sub">대구과학고 졸업</div>
+      </div>
+      <div class="credential-card">
+        <div class="credential-emoji">📐</div>
+        <div class="credential-label">현직</div>
+        <div class="credential-value">대치동<br>수학·KOI 강사</div>
+        <div class="credential-sub">10년+ 강의 경력</div>
+      </div>
+    </div>
+    <div class="author-detail">
+      <ul class="author-detail-list">
+        <li>서울대 공대 만 17세 최연소 입학 (역대 최연소)</li>
+        <li>시도 정보올림피아드 대상 수상</li>
+        <li>대구과학고등학교 17기 졸업</li>
+        <li>서울대 행정대학원 행정학 석사</li>
+        <li>공군참모총장상 수상 (시설장교 복무)</li>
+        <li>현재 대치동에서 수학·정보(KOI) 강사로 활동 중</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ====== TABLE OF CONTENTS ====== -->
+  <section class="toc">
+    <div class="section-label">CONTENTS</div>
+    <h2 class="toc-title">이 책에 담긴 내용</h2>
+    <div class="toc-parts">
+      <div class="toc-part">
+        <div class="toc-part-header">
+          <div class="toc-part-num">P1</div>
+          <div class="toc-part-info">
+            <div class="toc-part-name">수학 (상)</div>
+            <div class="toc-part-desc">핵심 개념 + 빈출 유형 집중 공략</div>
+          </div>
+        </div>
+        <div class="toc-chapters">
+          <div class="toc-chapter">다항식 — 인수분해 핵심 패턴 정리</div>
+          <div class="toc-chapter">방정식과 부등식 — 오답 패턴 분석</div>
+          <div class="toc-chapter">도형의 방정식 — 킬러 문항 접근법</div>
+        </div>
+      </div>
+      <div class="toc-part">
+        <div class="toc-part-header">
+          <div class="toc-part-num">P2</div>
+          <div class="toc-part-info">
+            <div class="toc-part-name">수학 (하)</div>
+            <div class="toc-part-desc">집합·명제·함수 완벽 정리</div>
+          </div>
+        </div>
+        <div class="toc-chapters">
+          <div class="toc-chapter">집합과 명제 — 논리적 사고력 훈련</div>
+          <div class="toc-chapter">함수 — 그래프 해석 전략</div>
+          <div class="toc-chapter">경우의 수 — 실전 응용 패턴</div>
+        </div>
+      </div>
+      <div class="toc-part">
+        <div class="toc-part-header">
+          <div class="toc-part-num">P3</div>
+          <div class="toc-part-info">
+            <div class="toc-part-name">수학 I</div>
+            <div class="toc-part-desc">지수·로그·삼각함수·수열</div>
+          </div>
+        </div>
+        <div class="toc-chapters">
+          <div class="toc-chapter">지수함수와 로그함수 — 변환 핵심</div>
+          <div class="toc-chapter">삼각함수 — 공식 암기 없이 이해하기</div>
+          <div class="toc-chapter">수열 — 귀납법부터 급수까지</div>
+        </div>
+      </div>
+    </div>
+    <div class="toc-bonus">
+      <div class="toc-bonus-icon">🎁</div>
+      <div>
+        <div class="toc-bonus-text">부록: 킬러 문항 30선 + 풀이 전략</div>
+        <div class="toc-bonus-sub">대치동 현장에서 검증된 고난도 문제 모음</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DIFFERENTIATOR ====== -->
+  <section class="diff">
+    <div class="section-label">DIFFERENCE</div>
+    <h2 class="diff-title">일반 교재와 무엇이 다른가요?</h2>
+    <div class="diff-compare">
+      <div class="diff-col diff-col--old">
+        <div class="diff-col-label">❌ 일반 수학 교재</div>
+        <div class="diff-item">개념만 나열하고 끝</div>
+        <div class="diff-item">오답 원인 분석 없음</div>
+        <div class="diff-item">킬러 문항 접근법 부재</div>
+        <div class="diff-item">현장 경험 없는 집필진</div>
+        <div class="diff-item">두꺼운 분량, 비효율적</div>
+      </div>
+      <div class="diff-col diff-col--new">
+        <div class="diff-col-label">✅ 이 책의 차별점</div>
+        <div class="diff-item">개념 → 유형 → 실전 3단계</div>
+        <div class="diff-item">학생들이 자주 틀리는 패턴 분석</div>
+        <div class="diff-item">킬러 문항 30선 + 전략 제공</div>
+        <div class="diff-item">대치동 10년+ 현장 경험 기반</div>
+        <div class="diff-item">핵심만 압축, 효율적 학습</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== REVIEWS ====== -->
+  <section class="review">
+    <div class="section-label">REVIEW</div>
+    <h2 class="review-title">수강생 학부모 후기</h2>
+    <div class="review-cards">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-content">"대치동에서 직접 아이를 가르치시는 분이 쓴 교재라 신뢰가 갑니다. 특히 오답 패턴 분석이 정말 도움이 됐어요. 아이가 자주 틀리는 부분을 정확히 짚어주더라고요."</p>
+        <div class="review-author">고2 학부모 K님</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-content">"킬러 문항 30선이 특히 좋았습니다. 어떻게 접근해야 하는지 단계별로 설명해주니까 혼자서도 풀 수 있게 되었어요."</p>
+        <div class="review-author">고1 학생 J님</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★☆</div>
+        <p class="review-content">"서울대 박사에 KOI 출신이라 이론만 강할 줄 알았는데, 대치동 현장 노하우가 녹아있어서 실전에 바로 적용 가능했습니다."</p>
+        <div class="review-author">고2 학부모 P님</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PRICING ====== -->
+  <section class="pricing">
+    <div class="section-label">PRICE</div>
+    <h2 class="pricing-title">지금 시작하세요</h2>
+    <div class="pricing-cards">
+      <div class="pricing-card pricing-card--single">
+        <div class="pricing-name">단품 구매</div>
+        <div class="pricing-desc">고등수학 완전정복 1권</div>
+        <div class="pricing-price">₩29,000</div>
+        <div class="pricing-save">PDF + EPUB 즉시 다운로드</div>
+        <div class="pricing-includes">
+          <div class="pricing-include-item">고등수학 완전정복 (150~200p)</div>
+          <div class="pricing-include-item">킬러 문항 30선 + 풀이</div>
+          <div class="pricing-include-item">PDF + EPUB 형식</div>
+          <div class="pricing-include-item">구매 후 180일간 다운로드</div>
+        </div>
+        <a href="#" class="pricing-cta">단품 구매하기</a>
+      </div>
+      <div class="pricing-card pricing-card--bundle">
+        <div class="pricing-best">BEST VALUE</div>
+        <div class="pricing-name">3권 번들 세트</div>
+        <div class="pricing-desc">고등수학 + KOI + 학부모 가이드</div>
+        <div class="pricing-original">정가 ₩87,000</div>
+        <div class="pricing-price">₩69,000</div>
+        <div class="pricing-save">₩18,000 할인 (21% OFF)</div>
+        <div class="pricing-includes">
+          <div class="pricing-include-item">고등수학 완전정복</div>
+          <div class="pricing-include-item">KOI·영재고 사고력 훈련서</div>
+          <div class="pricing-include-item">AI 시대 수학 학습법</div>
+          <div class="pricing-include-item">킬러 문항 30선 + 실전 50선</div>
+        </div>
+        <a href="#" class="pricing-cta">번들 구매하기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FAQ ====== -->
+  <section class="faq">
+    <div class="section-label">FAQ</div>
+    <h2 class="faq-title">자주 묻는 질문</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">어떤 파일 형식으로 받을 수 있나요?</div>
+        <div class="faq-a">PDF와 EPUB 두 가지 형식으로 제공됩니다. PDF는 태블릿이나 PC에서, EPUB은 전자책 리더에서 최적화된 환경으로 읽으실 수 있습니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">구매 후 언제까지 다운로드할 수 있나요?</div>
+        <div class="faq-a">결제 완료 후 180일(약 6개월) 이내에 최대 5회까지 다운로드할 수 있습니다. 마이페이지에서 바로 다운로드 가능합니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">환불이 가능한가요?</div>
+        <div class="faq-a">디지털 상품 특성상 다운로드 전까지 7일 이내 전액 환불이 가능합니다. 다운로드 이후에는 환불이 불가합니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">인쇄해서 사용해도 되나요?</div>
+        <div class="faq-a">네, 개인 학습 목적으로 인쇄하여 사용하실 수 있습니다. 단, 상업적 배포나 복제는 저작권법에 의해 금지됩니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">고1인데 이 책으로 충분한가요?</div>
+        <div class="faq-a">이 책은 수학(상), 수학(하), 수학 I을 모두 다루고 있어 고1~고2 과정 전체를 커버합니다. 특히 킬러 문항 훈련으로 상위권 도약에 적합합니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== GUARANTEE ====== -->
+  <section class="guarantee">
+    <div class="guarantee-box">
+      <div class="guarantee-icon">🛡️</div>
+      <h3 class="guarantee-title">100% 만족 보장</h3>
+      <p class="guarantee-text">다운로드 전 7일 이내 전액 환불 보장합니다. 대치동 현장에서 검증된 교재로, 실력 향상에 도움이 되지 않는다면 즉시 환불해 드립니다.</p>
+    </div>
+  </section>
+
+  <!-- ====== FINAL CTA ====== -->
+  <section class="final-cta">
+    <div class="final-cta-content">
+      <h2>대치동 강사의 노하우를<br><em>지금 바로</em> 시작하세요</h2>
+      <p class="final-cta-sub">서울대 박사 + KOI 출신 + 대치동 10년 경험의 결정판</p>
+      <a href="#" class="final-cta-btn">📘 지금 구매하기</a>
+      <p class="final-cta-note">결제 즉시 PDF/EPUB 다운로드 · 카드/계좌이체/간편결제 가능</p>
+    </div>
+  </section>
+
+  <!-- ====== TRUST BAR ====== -->
+  <div class="trust-bar">
+    <div class="trust-item">🔒 안전한 결제</div>
+    <div class="trust-item">⚡ 즉시 다운로드</div>
+    <div class="trust-item">📱 모든 기기 지원</div>
+    <div class="trust-item">🛡️ 7일 환불 보장</div>
+  </div>
+
+</div>
+
+</body>
+</html>
