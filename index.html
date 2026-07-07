@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stargate AI HTML Gallery</title>
 <meta name="description" content="Stargate Corporation · AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 모음">
+<meta property="og:title" content="Stargate AI HTML Gallery">
+<meta property="og:description" content="AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 갤러리">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;
@@ -118,7 +122,7 @@ fetch('data.json').then(r=>r.json()).then(DATA=>{
     else list.sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
     const grid = document.getElementById('grid');
     grid.innerHTML = list.map(d=>{
-      const img = d.thumb? '<img src="files/'+d.thumb+'" loading="lazy" onerror="this.outerHTML=&quot;<div class=noimg>썸네일 없음</div>&quot;">' : '<div class="noimg">썸네일 없음</div>';
+      const img = d.thumb? '<img src="files/'+d.thumb+'" alt="'+(d.title||'프로토타입')+' 미리보기" loading="lazy" onerror="this.outerHTML=&quot;<div class=noimg>썸네일 없음</div>&quot;">' : '<div class="noimg">썸네일 없음</div>';
       return '<a class="card" href="files/'+d.html+'" target="_blank">'+img+
         '<div class="meta"><div class="cat">'+d.cat+' · '+d.mt+' · '+d.sz+'KB</div>'+
         '<h3>'+escapeHtml(d.name)+'</h3><p>'+escapeHtml(d.orig)+'</p></div></a>';
