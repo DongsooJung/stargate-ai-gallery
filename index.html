@@ -4,135 +4,204 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stargate AI HTML Gallery</title>
-<meta name="description" content="Stargate Corporation · AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 모음">
+<meta name="description" content="Stargate Corporation · AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 모음 (품질 점수·등급 분류)">
 <meta property="og:title" content="Stargate AI HTML Gallery">
-<meta property="og:description" content="AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 갤러리">
+<meta property="og:description" content="AI로 생성한 HTML 프로토타입·대시보드·랜딩페이지·브랜드 자산 갤러리 (품질 점수·등급 분류)">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <style>
+:root{
+  --bg1:#0a0e27; --bg2:#151933; --panel:#171c3a; --line:#2a3354;
+  --txt:#eaf0fb; --txt2:#9aa6c9; --accent:#8ab4f8; --accent2:#a7b8ff;
+  --A:#34d399; --B:#60a5fa; --C:#fbbf24; --D:#f87171;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;
-  background:linear-gradient(135deg,#0a0e27 0%,#151933 100%);
-  color:#e0e6f0;padding:24px;min-height:100vh;line-height:1.5}
-h1{color:#8ab4f8;font-size:28px;margin-bottom:6px;letter-spacing:-.3px}
-.sub{color:#8892b0;font-size:13px;margin-bottom:18px}
-.sub b{color:#e0e6f0}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0;padding:14px;
-  background:#151933;border:1px solid #2a3354;border-radius:10px;align-items:center}
-.toolbar input,.toolbar select{background:#0a0e27;color:#e0e6f0;
-  border:1px solid #2a3354;border-radius:6px;padding:9px 12px;font-size:13px;
-  font-family:inherit;outline:none}
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);
+  color:var(--txt);padding:28px clamp(16px,4vw,48px);min-height:100vh;line-height:1.6}
+h1{color:var(--accent);font-size:clamp(22px,3vw,30px);margin-bottom:8px;letter-spacing:-.3px;font-weight:700;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.pill{font-size:13px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:16px;letter-spacing:0}
+.pill.home{color:#ffd29a;border:1px solid #3a3020}
+.pill.hub{color:var(--accent2);border:1px solid var(--line)}
+.pill.url{color:var(--accent2);font-family:ui-monospace,monospace;font-weight:400}
+.sub{color:var(--txt2);font-size:13.5px;margin-bottom:8px}
+.sub b{color:var(--txt)}
+.sub a{color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--txt2)}
+.legend .lg{display:flex;align-items:center;gap:6px}
+.legend .dot{width:11px;height:11px;border-radius:50%}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 6px;padding:16px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;align-items:center}
+.toolbar input,.toolbar select{background:var(--bg1);color:var(--txt);
+  border:1px solid var(--line);border-radius:8px;padding:10px 13px;font-size:13.5px;font-family:inherit;outline:none;transition:.15s}
 .toolbar input{flex:1;min-width:220px}
-.toolbar input:focus,.toolbar select:focus{border-color:#8ab4f8}
-.toolbar label{color:#8892b0;font-size:12px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 22px}
-.chip{background:#1e2547;border:1px solid #2a3354;color:#b4c2f5;
-  font-size:12px;padding:5px 11px;border-radius:14px;cursor:pointer;user-select:none;
-  transition:.15s}
-.chip.active{background:#4a6fdc;color:#fff;border-color:#6b8ddc}
-.chip:hover{border-color:#8ab4f8}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:#151933;border:1px solid #2a3354;border-radius:10px;
-  overflow:hidden;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.card:hover{transform:translateY(-4px);border-color:#8ab4f8;
-  box-shadow:0 8px 24px rgba(138,180,248,.15)}
-.card img{width:100%;height:160px;object-fit:cover;object-position:top;
-  display:block;background:#fff}
-.noimg{width:100%;height:160px;background:#2a3354;display:flex;
-  align-items:center;justify-content:center;color:#6b8ddc;font-size:12px}
-.meta{padding:12px}
-.meta .cat{font-size:10px;color:#8ab4f8;margin-bottom:4px;letter-spacing:.3px}
-.meta h3{font-size:13px;margin-bottom:4px;color:#e0e6f0;
-  word-break:break-all;line-height:1.3}
-.meta p{font-size:11px;color:#8892b0;word-break:break-all}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(138,180,248,.15)}
+.toolbar label{color:var(--txt2);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 8px}
+.chip{background:#1e2547;border:1px solid var(--line);color:#c3cef7;
+  font-size:12.5px;padding:6px 13px;border-radius:16px;cursor:pointer;user-select:none;transition:.15s}
+.chip.active{background:#4a6fdc;color:#fff;border-color:#7d9ce8}
+.chip:hover{border-color:var(--accent)}
+.gchip{font-weight:700}
+.gchip[data-g=A].active{background:var(--A);border-color:var(--A);color:#06301f}
+.gchip[data-g=B].active{background:var(--B);border-color:var(--B);color:#04234d}
+.gchip[data-g=C].active{background:var(--C);border-color:var(--C);color:#3d2c00}
+.gchip[data-g=D].active{background:var(--D);border-color:var(--D);color:#450b0b}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin-top:14px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  overflow:hidden;transition:.2s;box-shadow:0 2px 10px rgba(0,0,0,.35);display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 28px rgba(138,180,248,.18)}
+.card .thumbwrap{position:relative}
+.card img{width:100%;height:168px;object-fit:cover;object-position:top;display:block;background:#fff}
+.noimg{width:100%;height:168px;background:#232b52;display:flex;align-items:center;justify-content:center;color:#6b8ddc;font-size:12px}
+.badge{position:absolute;top:10px;right:10px;font-size:12px;font-weight:800;
+  width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  color:#06210f;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.badge[data-g=A]{background:var(--A)} .badge[data-g=B]{background:var(--B);color:#04234d}
+.badge[data-g=C]{background:var(--C);color:#3d2c00} .badge[data-g=D]{background:var(--D);color:#450b0b}
+.meta{padding:14px 15px 16px;display:flex;flex-direction:column;gap:5px}
+.meta .cat{font-size:10.5px;color:var(--accent);letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+.meta h3{font-size:14px;color:var(--txt);word-break:break-all;line-height:1.35;font-weight:600}
+.scorebar{display:flex;align-items:center;gap:8px;margin:2px 0}
+.scorebar .track{flex:1;height:6px;background:#232b52;border-radius:4px;overflow:hidden}
+.scorebar .fill{height:100%;border-radius:4px}
+.scorebar .num{font-size:12px;font-weight:700;color:var(--txt);min-width:34px;text-align:right}
+.note{font-size:11px;color:var(--txt2)}
+.note .tagpill{display:inline-block;background:#232b52;border:1px solid var(--line);border-radius:10px;padding:1px 8px;margin-right:4px;color:#b6c2ea}
+.path{font-size:10.5px;color:#7683a8;word-break:break-all;margin-top:2px}
 a{text-decoration:none;color:inherit}
-#hint{color:#6b8ddc;font-size:13px;padding:20px;text-align:center;display:none}
-footer{margin-top:40px;padding-top:20px;border-top:1px solid #2a3354;
-  color:#6b7390;font-size:11px;text-align:center}
-footer a{color:#8ab4f8}
+#hint{color:#6b8ddc;font-size:14px;padding:28px;text-align:center;display:none}
+footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);color:#6b7390;font-size:11.5px;text-align:center}
+footer a{color:var(--accent)}
 </style>
 </head>
 <body>
-<h1>Stargate AI HTML Gallery <a href="https://dongsoojung.github.io/" style="font-size:14px;color:#ffd29a;margin-left:10px;text-decoration:none;border:1px solid #3a3020;padding:4px 10px;border-radius:14px;letter-spacing:0">⌂ 포털 홈</a> <span style="font-size:12px;color:#a7b8ff;margin-left:10px;font-weight:400;font-family:ui-monospace,monospace">🌐 dongsoojung.github.io/stargate-ai-gallery</span> <a href="hub.html" style="font-size:14px;color:#a7b8ff;margin-left:10px;text-decoration:none;border:1px solid #2a3354;padding:4px 10px;border-radius:14px;letter-spacing:0">정적 허브 →</a></h1>
-<div class="sub">AI로 생성한 HTML 자산 아카이브 · 총 <b id="total">0</b>건 · 카테고리 <b id="catCnt">0</b>개 · 업데이트 2026-04-20 · <a href="hub.html" style="color:#8ab4f8">전체 링크 한눈에 보기(허브)</a></div>
-
-<div class="toolbar">
-<input id="q" type="text" placeholder="파일명·카테고리·원본 경로 검색...">
-<label>정렬</label>
-<select id="sort">
-<option value="cat">카테고리</option>
-<option value="name">파일명</option>
-<option value="mt_desc">수정일 ↓</option>
-<option value="mt_asc">수정일 ↑</option>
-<option value="size_desc">크기 ↓</option>
-</select>
-<label>폴더</label>
-<select id="tag">
-<option value="">전체</option>
-<option value="스타게이트(6GB)">스타게이트(6GB)</option>
-<option value="개인 자료(30GB)">개인 자료(30GB)</option>
-</select>
+<h1>Stargate AI HTML Gallery
+  <a href="https://dongsoojung.github.io/" class="pill home">⌂ 포털 홈</a>
+  <span class="pill url">🌐 dongsoojung.github.io/stargate-ai-gallery</span>
+  <a href="hub.html" class="pill hub">정적 허브 →</a>
+</h1>
+<div class="sub">AI로 생성한 HTML 자산 아카이브 · 총 <b id="total">0</b>건 · 카테고리 <b id="catCnt">0</b>개 · 품질 등급 분류 · 업데이트 2026-04-20 · <a href="hub.html">전체 링크 한눈에 보기(허브)</a></div>
+<div class="legend">
+  <span class="lg"><span class="dot" style="background:var(--A)"></span>A 우수 (85+)</span>
+  <span class="lg"><span class="dot" style="background:var(--B)"></span>B 양호 (72–84)</span>
+  <span class="lg"><span class="dot" style="background:var(--C)"></span>C 보통 (58–71)</span>
+  <span class="lg"><span class="dot" style="background:var(--D)"></span>D 정리대상 (&lt;58)</span>
+  <span class="lg" style="color:#7683a8">· 점수 기준: 완성도·최신성·활용가치·고유성</span>
 </div>
 
+<div class="toolbar">
+  <input id="q" type="text" placeholder="파일명·카테고리·원본 경로 검색...">
+  <label>정렬</label>
+  <select id="sort">
+    <option value="score_desc">점수 ↓</option>
+    <option value="score_asc">점수 ↑</option>
+    <option value="cat">카테고리</option>
+    <option value="name">파일명</option>
+    <option value="mt_desc">수정일 ↓</option>
+    <option value="mt_asc">수정일 ↑</option>
+    <option value="size_desc">크기 ↓</option>
+  </select>
+  <label>폴더</label>
+  <select id="tag">
+    <option value="">전체</option>
+    <option value="스타게이트(6GB)">스타게이트(6GB)</option>
+    <option value="개인 자료(30GB)">개인 자료(30GB)</option>
+  </select>
+</div>
+
+<div class="chips" id="gchips"></div>
 <div class="chips" id="chips"></div>
 <div class="grid" id="grid"></div>
 <div id="hint">조건에 맞는 파일이 없습니다.</div>
 
-<footer>
-© Stargate Corporation · <a href="https://github.com/" target="_blank">GitHub</a> · AI 생성 HTML 아카이브
-</footer>
+<footer>© Stargate Corporation · <a href="https://github.com/dongsoojung/stargate-ai-gallery" target="_blank">GitHub</a> · AI 생성 HTML 아카이브 · 품질 점수·등급 분류</footer>
 
 <script>
+const GC={A:'#34d399',B:'#60a5fa',C:'#fbbf24',D:'#f87171'};
 fetch('data.json').then(r=>r.json()).then(DATA=>{
-  document.getElementById('total').textContent = DATA.length;
-  const cats = [...new Set(DATA.map(d=>d.cat))].sort();
-  document.getElementById('catCnt').textContent = cats.length;
-  const chipsEl = document.getElementById('chips');
-  let activeCats = new Set();
-  const allChip = document.createElement('span');
-  allChip.className='chip active'; allChip.textContent='전체 ('+DATA.length+')';
-  allChip.onclick=()=>{activeCats.clear();document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));allChip.classList.add('active');render();};
+  document.getElementById('total').textContent=DATA.length;
+  const cats=[...new Set(DATA.map(d=>d.cat))].sort();
+  document.getElementById('catCnt').textContent=cats.length;
+
+  let activeCats=new Set(), activeGrades=new Set();
+
+  const gEl=document.getElementById('gchips');
+  const gAll=document.createElement('span');
+  gAll.className='chip gchip active';gAll.textContent='전체 등급';
+  gAll.onclick=()=>{activeGrades.clear();gEl.querySelectorAll('.gchip').forEach(c=>c.classList.remove('active'));gAll.classList.add('active');render();};
+  gEl.appendChild(gAll);
+  ['A','B','C','D'].forEach(g=>{
+    const n=DATA.filter(d=>d.grade===g).length;
+    const el=document.createElement('span');
+    el.className='chip gchip';el.dataset.g=g;el.textContent=g+' ('+n+')';
+    el.onclick=()=>{
+      if(activeGrades.has(g)){activeGrades.delete(g);el.classList.remove('active');}
+      else{activeGrades.add(g);el.classList.add('active');}
+      gAll.classList.toggle('active',activeGrades.size===0);
+      render();
+    };
+    gEl.appendChild(el);
+  });
+
+  const chipsEl=document.getElementById('chips');
+  const allChip=document.createElement('span');
+  allChip.className='chip active';allChip.textContent='전체 ('+DATA.length+')';
+  allChip.onclick=()=>{activeCats.clear();chipsEl.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));allChip.classList.add('active');render();};
   chipsEl.appendChild(allChip);
   cats.forEach(c=>{
-    const n = DATA.filter(d=>d.cat===c).length;
-    const el = document.createElement('span');
-    el.className='chip'; el.textContent=c+' ('+n+')';
+    const n=DATA.filter(d=>d.cat===c).length;
+    const el=document.createElement('span');
+    el.className='chip';el.textContent=c+' ('+n+')';
     el.onclick=()=>{
       if(activeCats.has(c)){activeCats.delete(c);el.classList.remove('active');}
       else{activeCats.add(c);el.classList.add('active');}
-      allChip.classList.toggle('active', activeCats.size===0);
+      allChip.classList.toggle('active',activeCats.size===0);
       render();
     };
     chipsEl.appendChild(el);
   });
+
   function render(){
-    const q = document.getElementById('q').value.toLowerCase();
-    const sort = document.getElementById('sort').value;
-    const tag = document.getElementById('tag').value;
-    let list = DATA.filter(d=>{
-      if(activeCats.size && !activeCats.has(d.cat)) return false;
-      if(tag && d.tag!==tag) return false;
-      if(q && !(d.name.toLowerCase().includes(q) || d.orig.toLowerCase().includes(q) || d.cat.toLowerCase().includes(q))) return false;
+    const q=document.getElementById('q').value.toLowerCase();
+    const sort=document.getElementById('sort').value;
+    const tag=document.getElementById('tag').value;
+    let list=DATA.filter(d=>{
+      if(activeCats.size&&!activeCats.has(d.cat))return false;
+      if(activeGrades.size&&!activeGrades.has(d.grade))return false;
+      if(tag&&d.tag!==tag)return false;
+      if(q&&!(d.name.toLowerCase().includes(q)||d.orig.toLowerCase().includes(q)||d.cat.toLowerCase().includes(q)))return false;
       return true;
     });
-    if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
-    else if(sort==='mt_desc') list.sort((a,b)=>b.mt.localeCompare(a.mt));
-    else if(sort==='mt_asc') list.sort((a,b)=>a.mt.localeCompare(b.mt));
-    else if(sort==='size_desc') list.sort((a,b)=>parseFloat(b.sz)-parseFloat(a.sz));
-    else list.sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
-    const grid = document.getElementById('grid');
-    grid.innerHTML = list.map(d=>{
-      const img = d.thumb? '<img src="files/'+d.thumb+'" alt="'+(d.title||'프로토타입')+' 미리보기" loading="lazy" onerror="this.outerHTML=&quot;<div class=noimg>썸네일 없음</div>&quot;">' : '<div class="noimg">썸네일 없음</div>';
-      return '<a class="card" href="files/'+d.html+'" target="_blank">'+img+
-        '<div class="meta"><div class="cat">'+d.cat+' · '+d.mt+' · '+d.sz+'KB</div>'+
-        '<h3>'+escapeHtml(d.name)+'</h3><p>'+escapeHtml(d.orig)+'</p></div></a>';
+    if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+    else if(sort==='mt_desc')list.sort((a,b)=>b.mt.localeCompare(a.mt));
+    else if(sort==='mt_asc')list.sort((a,b)=>a.mt.localeCompare(b.mt));
+    else if(sort==='size_desc')list.sort((a,b)=>parseFloat(b.sz)-parseFloat(a.sz));
+    else if(sort==='score_asc')list.sort((a,b)=>(a.score-b.score)||a.name.localeCompare(b.name));
+    else if(sort==='cat')list.sort((a,b)=>a.cat.localeCompare(b.cat)||b.score-a.score);
+    else list.sort((a,b)=>(b.score-a.score)||a.name.localeCompare(b.name));
+
+    const grid=document.getElementById('grid');
+    grid.innerHTML=list.map(d=>{
+      const g=d.grade,col=GC[g]||'#8ab4f8';
+      const img=d.thumb?'<img src="files/'+d.thumb+'" alt="'+escapeHtml(d.name)+' 미리보기" loading="lazy" onerror="this.outerHTML=&quot;<div class=noimg>썸네일 없음</div>&quot;">':'<div class="noimg">썸네일 없음</div>';
+      const notes=(d.scoreNote||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>'<span class="tagpill">'+escapeHtml(s)+'</span>').join('');
+      return '<a class="card" href="files/'+d.html+'" target="_blank">'+
+        '<div class="thumbwrap">'+img+'<span class="badge" data-g="'+g+'">'+g+'</span></div>'+
+        '<div class="meta">'+
+          '<div class="cat">'+escapeHtml(d.cat)+' · '+d.mt+' · '+d.sz+'KB</div>'+
+          '<h3>'+escapeHtml(d.name)+'</h3>'+
+          '<div class="scorebar"><div class="track"><div class="fill" style="width:'+d.score+'%;background:'+col+'"></div></div><span class="num">'+d.score+'</span></div>'+
+          '<div class="note">'+notes+'</div>'+
+          '<div class="path">'+escapeHtml(d.orig)+'</div>'+
+        '</div></a>';
     }).join('');
-    document.getElementById('hint').style.display = list.length? 'none':'block';
+    document.getElementById('hint').style.display=list.length?'none':'block';
   }
-  function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  document.getElementById('q').addEventListener('input', render);
-  document.getElementById('sort').addEventListener('change', render);
-  document.getElementById('tag').addEventListener('change', render);
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  document.getElementById('q').addEventListener('input',render);
+  document.getElementById('sort').addEventListener('change',render);
+  document.getElementById('tag').addEventListener('change',render);
   render();
 });
 </script>
