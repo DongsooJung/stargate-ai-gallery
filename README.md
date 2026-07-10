@@ -49,7 +49,7 @@ git push -u origin main
 - 1~2분 후 `https://YOUR_USERNAME.github.io/stargate-ai-gallery/` 에서 확인
 
 ### 4) 커스텀 도메인 (선택)
-- Settings → Pages → Custom domain → `gallery.stargate11.com` 등록
+- Settings → Pages → Custom domain → `gallery.stargateedu.co.kr` 등록
 - 도메인 DNS에 CNAME 레코드: `YOUR_USERNAME.github.io`
 
 ## 파일명 규칙
