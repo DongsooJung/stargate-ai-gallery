@@ -1,6 +1,6 @@
 # Stargate AI HTML Gallery
 
-Stargate Corporation이 AI로 생성한 HTML 프로토타입·대시보드·랜딩·명함·브랜드 자산 65건의 정적 아카이브입니다.
+Stargate Corporation이 AI로 생성한 HTML 프로토타입·대시보드·랜딩·명함·브랜드 자산 27건의 정적 아카이브입니다.
 
 ## 구조
 
@@ -9,16 +9,16 @@ Stargate Corporation이 AI로 생성한 HTML 프로토타입·대시보드·랜�
 ├── index.html          ← 메인 갤러리 (검색·필터·정렬)
 ├── data.json           ← 메타데이터 (카테고리·원본경로·수정일)
 ├── files/
-│   ├── *.html          ← 65개 AI 생성 HTML (ASCII 안전 이름)
+│   ├── *.html          ← 27개 AI 생성 HTML (ASCII 안전 이름)
 │   └── thumbs/
-│       └── *.png       ← 65개 썸네일 이미지
+│       └── *.png       ← 27개 썸네일 이미지
 ├── README.md
 └── .gitignore
 ```
 
-## 카테고리 (19개)
+## 카테고리 (13개)
 
-AI-명함카드 · AI-Cafe24상품상세 · AI-법인사업 · AI-업무자동화 · AI-랜딩페이지 · AI-지식그래프 · AI-아키텍처설명 · AI-폰트브랜딩 · AI-AI데모 · AI-기획문서 · AI-브리핑 · AI-Claude생성 · AI-북마크리포트 · AI-교육자료 · AI-조직도 · AI-창작플랫폼 · AI-전략대시보드 · AI-생산성대시보드 · AI-스크린샷인덱스 · AI-이미지인포그래픽
+AI-랜딩페이지 · AI-Cafe24상품상세 · AI-명함카드 · AI-전략대시보드 · AI-생산성대시보드 · AI-업무자동화 · AI-지식그래프 · AI-아키텍처설명 · AI-폰트브랜딩 · AI-AI데모 · AI-이미지인포그래픽 · AI-교육자료 · AI-스크린샷인덱스
 
 ## GitHub Pages 배포 방법
 
@@ -36,7 +36,7 @@ AI-명함카드 · AI-Cafe24상품상세 · AI-법인사업 · AI-업무자동�
 cd "C:\Users\DONGSOO_PC\Desktop\Cowork(260323)\스타게이트 에이아이 갤러리"
 git init
 git add .
-git commit -m "init: Stargate AI HTML Gallery (65 files, 19 categories)"
+git commit -m "init: Stargate AI HTML Gallery (27 files, 13 categories)"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/stargate-ai-gallery.git
 git push -u origin main
