@@ -1,29 +1,29 @@
-# Stargate AI HTML Gallery
+# Stargate AI Gallery
 
-Stargate Corporation이 AI로 생성한 HTML 프로토타입·대시보드·랜딩·명함·브랜드 자산 27건의 정적 아카이브입니다.
+Stargate Corporation이 AI로 생성한 카드뉴스·HTML 프로토타입·대시보드·랜딩·명함·브랜드 자산 35건의 정적 아카이브입니다.
 
 ## 구조
 
 ```
-스타게이트 에이아이 갤러리/   ← 로컬 폴더명 (한글)
+stargate-ai-gallery/
 ├── index.html          ← 메인 갤러리 (검색·필터·정렬)
 ├── data.json           ← 메타데이터 (카테고리·원본경로·수정일)
 ├── files/
-│   ├── *.html          ← 27개 AI 생성 HTML (ASCII 안전 이름)
+│   ├── *.html          ← 35개 AI 생성 자산 상세 페이지 (ASCII 안전 이름)
+│   ├── cardnews/       ← 카드뉴스 원본 이미지
 │   └── thumbs/
-│       └── *.png       ← 27개 썸네일 이미지
+│       └── *.png       ← 35개 썸네일 이미지
 ├── README.md
 └── .gitignore
 ```
 
-## 카테고리 (13개)
+## 카테고리 (14개)
 
-AI-랜딩페이지 · AI-Cafe24상품상세 · AI-명함카드 · AI-전략대시보드 · AI-생산성대시보드 · AI-업무자동화 · AI-지식그래프 · AI-아키텍처설명 · AI-폰트브랜딩 · AI-AI데모 · AI-이미지인포그래픽 · AI-교육자료 · AI-스크린샷인덱스
+AI-랜딩페이지 · AI-Cafe24상품상세 · AI-명함카드 · AI-전략대시보드 · AI-생산성대시보드 · AI-업무자동화 · AI-지식그래프 · AI-아키텍처설명 · AI-폰트브랜딩 · AI-AI데모 · AI-이미지인포그래픽 · AI-교육자료 · AI-스크린샷인덱스 · AI-카드뉴스
 
 ## GitHub Pages 배포 방법
 
 > **주의**: GitHub 저장소명(URL)은 ASCII만 허용되므로 `stargate-ai-gallery`로 유지합니다.
-> 로컬 폴더명만 한글(`스타게이트 에이아이 갤러리`)로 사용합니다.
 
 ### 1) 저장소 생성 (GitHub 웹)
 - New repository → 이름: `stargate-ai-gallery` (ASCII 고정)
@@ -33,10 +33,10 @@ AI-랜딩페이지 · AI-Cafe24상품상세 · AI-명함카드 · AI-전략대�
 ### 2) 로컬에서 Push (PowerShell)
 
 ```powershell
-cd "C:\Users\DONGSOO_PC\Desktop\Cowork(260323)\스타게이트 에이아이 갤러리"
+cd "$HOME\stargate-ai-gallery"
 git init
 git add .
-git commit -m "init: Stargate AI HTML Gallery (27 files, 13 categories)"
+git commit -m "init: Stargate AI Gallery (35 files, 14 categories)"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/stargate-ai-gallery.git
 git push -u origin main
@@ -78,6 +78,7 @@ git push -u origin main
 | `lit-` | 창작플랫폼 |
 | `ss-` | 스크린샷인덱스 |
 | `ig-` | 이미지인포그래픽 |
+| `cn-` | 카드뉴스 |
 
 ## 주의사항
 
