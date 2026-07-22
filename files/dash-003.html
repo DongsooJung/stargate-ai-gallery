@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DONGSOOJUNG · 2026년 6월 AI 활용 대시보드</title>
+<meta name="description" content="DONGSOOJUNG 계정의 2026년 6월 대화 활동을 개인정보 없이 집계한 AI 활용 패턴 대시보드">
+<style>
+:root{--bg:#07111f;--panel:#101d30;--panel2:#15263d;--line:#29405f;--text:#eef6ff;--muted:#94a9c3;--accent:#67e8f9;--accent2:#a78bfa;--good:#34d399;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#15355b 0,transparent 38%),linear-gradient(160deg,#07111f,#0a1322 55%,#111827);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;line-height:1.55;min-height:100vh}a{color:inherit}.wrap{max-width:1180px;margin:auto;padding:38px 20px 64px}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;flex-wrap:wrap}.eyebrow{font-size:12px;letter-spacing:.18em;color:var(--accent);font-weight:800}.title{font-size:clamp(28px,5vw,52px);line-height:1.08;margin:8px 0 12px;letter-spacing:-.04em}.sub{color:var(--muted);max-width:760px}.back{display:inline-flex;padding:9px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;background:rgba(16,29,48,.7);font-size:13px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:30px 0}.card{background:linear-gradient(145deg,rgba(21,38,61,.94),rgba(11,25,43,.94));border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 45px rgba(0,0,0,.18)}.kpi{padding:20px}.kpi b{font-size:34px;display:block;line-height:1.1}.kpi span{font-size:13px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.panel{padding:22px}.panel h2{font-size:18px;margin:0 0 4px}.panel .desc{color:var(--muted);font-size:12px;margin-bottom:20px}.bar-row{display:grid;grid-template-columns:132px 1fr 38px;align-items:center;gap:10px;margin:12px 0;font-size:13px}.track{height:12px;background:#0a1627;border-radius:999px;overflow:hidden;border:1px solid #1d3350}.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent2),var(--accent))}.fill.alt{background:linear-gradient(90deg,#60a5fa,#34d399)}.fill.warm{background:linear-gradient(90deg,#fb7185,#fbbf24)}.timeline{display:flex;align-items:flex-end;gap:16px;height:220px;padding:12px 6px 0}.week{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px}.column{width:min(74px,72%);border-radius:12px 12px 4px 4px;background:linear-gradient(180deg,var(--accent),#2563eb);min-height:10px;box-shadow:0 8px 25px rgba(37,99,235,.25)}.week strong{font-size:14px}.week small{font-size:11px;color:var(--muted)}.insights{margin-top:16px;padding:24px}.insights-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}.insight{padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(7,17,31,.45)}.insight b{display:block;margin-bottom:6px;color:var(--accent)}.insight p{margin:0;color:var(--muted);font-size:13px}.privacy{margin-top:16px;padding:16px 18px;border:1px dashed #526781;border-radius:14px;color:var(--muted);font-size:12px}.footer{margin-top:28px;color:#6f839d;font-size:12px;text-align:center}@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.grid,.insights-grid{grid-template-columns:1fr}.bar-row{grid-template-columns:112px 1fr 34px}.wrap{padding-top:24px}}@media(max-width:420px){.kpis{grid-template-columns:1fr 1fr}.kpi{padding:15px}.kpi b{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">STARGATE AI GALLERY · ACCOUNT ANALYTICS</div>
+      <h1 class="title">2026년 6월<br>AI 활용 패턴</h1>
+      <div class="sub">DONGSOOJUNG 계정의 월간 대화 기록을 주제·행동 유형·활동 집중도로 집계한 시각화입니다. 공개 버전에는 개인 사건명, 건강·재무 세부정보, 계정 식별정보를 포함하지 않았습니다.</div>
+    </div>
+    <a class="back" href="../hub.html">← AI Gallery Hub</a>
+  </div>
+
+  <section class="kpis">
+    <div class="card kpi"><b>29</b><span>월간 대화 건수</span></div>
+    <div class="card kpi"><b>18</b><span>활동일</span></div>
+    <div class="card kpi"><b>14</b><span>최집중 주간 대화 수</span></div>
+    <div class="card kpi"><b>38%</b><span>최다 주제 비중</span></div>
+  </section>
+
+  <section class="grid">
+    <article class="card panel">
+      <h2>주요 주제 분포</h2>
+      <div class="desc">복합 대화는 대표 활용 목적 하나로 분류</div>
+      <div class="bar-row"><span>행정·문서·재무</span><div class="track"><div class="fill" style="width:100%"></div></div><b>11</b></div>
+      <div class="bar-row"><span>AI·개발</span><div class="track"><div class="fill" style="width:64%"></div></div><b>7</b></div>
+      <div class="bar-row"><span>기기·차량</span><div class="track"><div class="fill" style="width:55%"></div></div><b>6</b></div>
+      <div class="bar-row"><span>계정·데이터</span><div class="track"><div class="fill" style="width:18%"></div></div><b>2</b></div>
+      <div class="bar-row"><span>사업·운영</span><div class="track"><div class="fill" style="width:18%"></div></div><b>2</b></div>
+      <div class="bar-row"><span>개인·웰빙</span><div class="track"><div class="fill" style="width:9%"></div></div><b>1</b></div>
+    </article>
+
+    <article class="card panel">
+      <h2>요청 행동 유형</h2>
+      <div class="desc">사용자가 AI에 기대한 실제 작업 방식</div>
+      <div class="bar-row"><span>상담·판단</span><div class="track"><div class="fill alt" style="width:100%"></div></div><b>7</b></div>
+      <div class="bar-row"><span>비교·조사</span><div class="track"><div class="fill alt" style="width:100%"></div></div><b>7</b></div>
+      <div class="bar-row"><span>설치·문제해결</span><div class="track"><div class="fill alt" style="width:86%"></div></div><b>6</b></div>
+      <div class="bar-row"><span>문서작성·보완</span><div class="track"><div class="fill alt" style="width:71%"></div></div><b>5</b></div>
+      <div class="bar-row"><span>운영·구조화</span><div class="track"><div class="fill alt" style="width:43%"></div></div><b>3</b></div>
+      <div class="bar-row"><span>정서 지원</span><div class="track"><div class="fill alt" style="width:14%"></div></div><b>1</b></div>
+    </article>
+
+    <article class="card panel">
+      <h2>주차별 활동량</h2>
+      <div class="desc">6월 중순에 행정·기기·개발 요청이 집중</div>
+      <div class="timeline">
+        <div class="week"><div class="column" style="height:21%"></div><strong>3건</strong><small>6/1–7</small></div>
+        <div class="week"><div class="column" style="height:50%"></div><strong>7건</strong><small>6/8–14</small></div>
+        <div class="week"><div class="column" style="height:100%"></div><strong>14건</strong><small>6/15–21</small></div>
+        <div class="week"><div class="column" style="height:36%"></div><strong>5건</strong><small>6/22–30</small></div>
+      </div>
+    </article>
+
+    <article class="card panel">
+      <h2>관심 흐름</h2>
+      <div class="desc">월간 대화의 중심이 이동한 방향</div>
+      <div class="bar-row"><span>초반</span><div class="track"><div class="fill warm" style="width:28%"></div></div><b>기반</b></div>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px 142px">로그인 재개 · 차량 점검 · AI 모델 비교</p>
+      <div class="bar-row"><span>중반</span><div class="track"><div class="fill warm" style="width:92%"></div></div><b>집중</b></div>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px 142px">행정 문서 · 법인 운영 · 기기 문제 해결</p>
+      <div class="bar-row"><span>후반</span><div class="track"><div class="fill warm" style="width:57%"></div></div><b>전환</b></div>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 0 142px">Python · WSL · GitHub · 오픈소스 AI 도구</p>
+    </article>
+  </section>
+
+  <section class="card insights">
+    <h2 style="margin:0">활용 인사이트</h2>
+    <div class="insights-grid">
+      <div class="insight"><b>실행 중심</b><p>설명만 듣기보다 설치, 문서 작성, 비교 판단과 문제 해결까지 이어지는 요청 비중이 높습니다.</p></div>
+      <div class="insight"><b>검증 우선</b><p>행정·가격·소프트웨어 상태처럼 변동 가능한 정보는 매 작업마다 최신성을 다시 확인해야 합니다.</p></div>
+      <div class="insight"><b>자동화 확장</b><p>월 후반으로 갈수록 AI 모델 비교에서 개발환경·GitHub·로컬 자동화 활용으로 관심이 확장됩니다.</p></div>
+    </div>
+    <div class="privacy">공개 안전 처리: 원본 대화 문장, 사건번호, 주소, 이메일, 계정 토큰, 건강 상태 및 개별 재무 내용은 표시하지 않았습니다. 수치는 이관용 요약본을 기반으로 한 집계값입니다.</div>
+  </section>
+
+  <div class="footer">Stargate Corporation · AI-generated analytics artifact · Updated 2026-07-22</div>
+</div>
+</body>
+</html>
